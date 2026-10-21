@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="Postagens"/>
+    <item
+        android:id="@+id/nav_eventos"
+        android:icon="@drawable/ic_jornal_dobrado"
+        android:title="Eventos"/>
+    <item
+        android:id="@+id/nav_mapa"
+        android:icon="@drawable/ic_location_on_map"
+        android:title="Mapa"/>
+
+    <item
+        android:id="@+id/nav_doacoes"
+        android:icon="@drawable/ic_animais_de_estimacao"
+        android:title="Doações"/>
+    <item
+        android:id="@+id/nav_perfil_usuario"
+        android:icon="@drawable/icon_profile"
+        android:title="Perfil"/>
+</menu>

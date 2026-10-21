@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 1. Atualizamos o tema base para MaterialComponents.DayNight
+         Isso faz o app suportar e intercalar automaticamente nossas paletas de Modo Claro e Escuro! -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Cores do Tema -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- 2. Forçamos o Android a aplicar o visual moderno nos campos de texto por padrão -->
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+
+        <!-- 3. Definimos que TODO botão do app será em formato de Pílula e terá animação! -->
+        <item name="materialButtonStyle">@style/BotaoAmigoPet</item>
+    </style>
+
+    <!-- ESTILO GLOBAL PARA OS BOTÕES -->
+    <style name="BotaoAmigoPet" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">28dp</item>
+        <!-- A animação que você criou agora funciona em todo o aplicativo! -->
+        <item name="android:stateListAnimator">@animator/btn_press</item>
+    </style>
+
+    <!-- Atualizando os seus outros temas para não quebrarem e usarem o motor novo -->
+    <style name="AppTheme2" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@android:color/black</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="popupMenuStyle">@menu/menu_principal_toolbar</item>
+    </style>
+
+    <style name="AppTheme3" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@android:color/black</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
+</resources>

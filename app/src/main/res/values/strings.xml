@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name"></string>
+    <string name="dotted">&#8226;</string>
+    <string name="Open">Amigo Pet</string>
+    <string name="close">Amigo Pet</string>
+    <string name="title_activity_tela_principal">Tela_principal</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_tools">Tools</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_send">Send</string>
+    <string name="title_activity_bottun">Bottun</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="datas_tempos_filto">
+        <item>Qualquer data</item>
+        <item>Na última 24 horas</item>
+        <item>Última semana</item>
+        <item>Último mês</item>
+        <item>Último ano</item>
+    </string-array>
+
+    <string name="facebook_app_id">1446763404048759</string>
+    <string name="fb_login_protocol_scheme">fb1446763404048759</string>
+    <string name="default_web_client_id">1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com</string>
+    <string name="title_activity_usuario_hub">UsuarioHubActivity</string>
+
+</resources>

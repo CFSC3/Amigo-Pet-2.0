@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Quente (Acolhimento & Marca) -->
+    <color name="colorPrimary">#F6A800</color>
+    <color name="colorPrimaryDark">#C26710</color>
+    <color name="colorAccent">#F9C74F</color>
+
+    <!-- Ação & Contraste (Confiança & Saúde) -->
+    <color name="colorTeal">#2A9D8F</color>
+
+    <!-- Cores Neutras & Apoio (Leitura & Leveza) -->
+    <color name="colorBackground">#FDFBF7</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorTextPrimary">#2D3142</color>
+    <color name="colorDivider">#C5CBD3</color>
+    <color name="colorShadow">#1E202B</color>
+
+    <!-- Cores herdadas (Mantidas para não quebrar as telas atuais antes da refatoração completa) -->
+    <color name="branco">#FFFFFF</color>
+    <color name="tt">#F9C74F</color>
+    <color name="ttt">#F9C74F</color>
+    <color name="tg">#2A9D8F</color>
+    <color name="branco_translucido">#82FFFFFF</color>
+    <color name="branco_translucidoo">#83FFFFFF</color>
+    <color name="invisivl">#1F000000</color>
+    <color name="linhaDesign">#C5CBD3</color>
+
+    <!-- Cores da Apresentação Amigo Pet -->
+    <color name="cor_slide_boas_vindas">#FFB74D</color>
+    <color name="cor_slide_comunidade">#BA68C8</color>
+    <color name="cor_slide_mapa">#81C784</color>
+    <color name="cor_slide_adocao">#FFF176</color>
+
+</resources>

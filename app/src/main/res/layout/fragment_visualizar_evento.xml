@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Imagem de Capa do Evento -->
+        <ImageView
+            android:id="@+id/imgDetalheEvento"
+            android:layout_width="0dp"
+            android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            android:background="@color/colorDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Título do Evento -->
+        <TextView
+            android:id="@+id/txtTituloDetalheEvento"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="Carregando título..."
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgDetalheEvento" />
+
+        <!-- Bloco de Data e Horário -->
+        <LinearLayout
+            android:id="@+id/layoutInfoTempo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtTituloDetalheEvento">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+            app:tint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/txtDataHoraDetalhe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="25/10 às 15:30"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Bloco de Endereço -->
+        <LinearLayout
+            android:id="@+id/layoutInfoLocal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutInfoTempo">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+            app:tint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/txtEnderecoDetalhe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Carregando endereço..."
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Linha divisória -->
+        <View
+            android:id="@+id/linhaDivisoria"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutInfoLocal" />
+
+        <!-- Título da Seção Descrição -->
+        <TextView
+            android:id="@+id/lblSobreEvento"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Sobre o Evento"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linhaDivisoria" />
+
+        <!-- Descrição Completa -->
+        <TextView
+            android:id="@+id/txtDescricaoDetalheEvento"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:paddingBottom="32dp"
+            android:text="Carregando descrição completa do evento..."
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblSobreEvento" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

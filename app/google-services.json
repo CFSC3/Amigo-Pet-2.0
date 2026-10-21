@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "1031435617991",
+    "firebase_url": "https://loveyou-21e3d-default-rtdb.firebaseio.com",
+    "project_id": "loveyou-21e3d",
+    "storage_bucket": "loveyou-21e3d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031435617991:android:8904f04bacef12d59f60e2",
+        "android_client_info": {
+          "package_name": "com.example.a0411"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAkuibpVtvOvaOZrsdqfL8k4kCaFpr_lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031435617991:android:5b5e96f759aba6559f60e2",
+        "android_client_info": {
+          "package_name": "com.example.tricoteisso"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAkuibpVtvOvaOZrsdqfL8k4kCaFpr_lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031435617991:android:410d0b17aa08cac39f60e2",
+        "android_client_info": {
+          "package_name": "com.ifam.amigopetfixo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031435617991-247oelb3i93gvtosh8djred8jfqrk5qm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ifam.amigopetfixo",
+            "certificate_hash": "db88ff31ea4083598ec5032d8aa4c3bf7df637cf"
+          }
+        },
+        {
+          "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAkuibpVtvOvaOZrsdqfL8k4kCaFpr_lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031435617991-hrc0c8smh7bsltq2u930b9ef5kpug40b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

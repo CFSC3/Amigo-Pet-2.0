@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Quente (Acolhimento & Marca) - Ajustado para Modo Noturno -->
+    <color name="colorPrimary">#FA9335</color>
+    <color name="colorPrimaryDark">#C8600C</color>
+    <color name="colorAccent">#FAD058</color>
+
+    <!-- Ação & Contraste (Confiança & Saúde) -->
+    <color name="colorTeal">#3CB6A8</color>
+
+    <!-- Cores Neutras & Apoio (Leitura & Superfícies no Escuro) -->
+    <color name="colorBackground">#121214</color>
+    <color name="colorSurface">#1E1E24</color>
+    <color name="colorTextPrimary">#EAE6E1</color>
+    <color name="colorDivider">#2C2C35</color>
+    <color name="colorShadow">#000000</color>
+
+    <!-- Cores herdadas ajustadas para o modo escuro -->
+    <color name="branco">#1E1E24</color>
+    <color name="tt">#FAD058</color>
+    <color name="ttt">#FAD058</color>
+    <color name="tg">#3CB6A8</color>
+    <color name="branco_translucido">#821E1E24</color>
+    <color name="branco_translucidoo">#831E1E24</color>
+    <color name="invisivl">#1F000000</color>
+    <color name="linhaDesign">#2C2C35</color>
+</resources>

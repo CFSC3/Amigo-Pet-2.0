@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/voltar"
+        android:title=""
+        android:icon="@drawable/ic_arrow_back_white_24dp"
+        android:layout_gravity="left|center_vertical"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        app:showAsAction="ifRoom"
+        />
+</menu>

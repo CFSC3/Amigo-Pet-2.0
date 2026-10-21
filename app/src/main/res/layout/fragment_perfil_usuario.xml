@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    tools:context=".fragment.PerfilUsuarioFragment">
+
+    <!-- Toolbar no Estilo Amigo Pet -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarPerfil"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meu Perfil"
+            android:textColor="@color/branco"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="start" />
+
+        <ImageButton
+            android:id="@+id/btnMenuConfiguracoes"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Menu de Configurações"
+            android:src="@drawable/ic_menu"
+            app:tint="@color/branco" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Capa do Perfil (Preparada para receber imagem no futuro) -->
+    <ImageView
+        android:id="@+id/imageCapaPerfil"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:background="@color/colorPrimary"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarPerfil" />
+
+    <!-- Foto de Perfil (Sobrepondo a Capa exatamente no limite) -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imagePerfilUsuario"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="90dp"
+        android:src="@drawable/ic_avatar_pet"
+        app:civ_border_color="#FFFFFF"
+        app:civ_border_width="3dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageCapaPerfil" />
+
+    <!-- Nome do Usuário -->
+    <TextView
+        android:id="@+id/textNomePerfil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Nome do Usuário"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imagePerfilUsuario" />
+
+    <!-- Descrição -->
+
+    <!-- Botões de Ação -->
+    <TextView
+        android:id="@+id/textBioPerfil"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="24dp"
+        android:text="Descrição ou biografia do usuário vai aparecer bem aqui..."
+        android:textAlignment="center"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textNomePerfil" />
+
+    <LinearLayout
+        android:id="@+id/layoutBotoesAcao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textBioPerfil">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditarPerfil"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Editar Perfil"
+            android:textAllCaps="false"
+            android:textColor="@color/branco"
+            android:textStyle="bold"
+            app:backgroundTint="@color/colorPrimary"
+            app:cornerRadius="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdicionarPet"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Adicionar Pet"
+            android:textAllCaps="false"
+            android:textColor="@color/branco"
+            android:textStyle="bold"
+            app:backgroundTint="@color/colorPrimary"
+            app:cornerRadius="24dp" />
+    </LinearLayout>
+
+    <!-- Título do Carrossel de Pets -->
+    <TextView
+        android:id="@+id/tituloPets"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:text="Meus Pets"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutBotoesAcao" />
+
+    <!-- Carrossel de Pets -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPetsCarrossel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/tituloPets"
+        tools:itemCount="1" />
+
+    <!-- Divisória -->
+    <View
+        android:id="@+id/linhaDivisoria"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/colorDivider"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerPetsCarrossel" />
+
+    <!-- Seletor de Abas -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleGroupFeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:singleSelection="true"
+        app:selectionRequired="true"
+        app:checkedButton="@+id/btnAbaPostagens"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linhaDivisoria">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAbaPostagens"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Postagens" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAbaDoacoes"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Doações/Adoções" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- Feed Pessoal -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerFeedUsuario"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toggleGroupFeed"
+        tools:itemCount="6" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
