@@ -34,6 +34,18 @@
             android:contentDescription="Menu de Configurações"
             android:src="@drawable/ic_menu"
             app:tint="@color/branco" />
+
+        <ImageButton
+            android:id="@+id/btnMeusFavoritos"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:padding="0dp"
+            android:scaleType="fitCenter"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_favority"
+            app:tint="@color/branco" />
     </androidx.appcompat.widget.Toolbar>
 
     <!-- Capa do Perfil (Preparada para receber imagem no futuro) -->

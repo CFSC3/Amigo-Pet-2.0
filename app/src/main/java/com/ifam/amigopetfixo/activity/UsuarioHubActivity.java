@@ -14,6 +14,7 @@ import com.ifam.amigopetfixo.fragment.EditarDoacaoFragment;
 import com.ifam.amigopetfixo.fragment.EditarPerfilFragment;
 import com.ifam.amigopetfixo.fragment.EditarPetFragment;
 import com.ifam.amigopetfixo.fragment.EditarPostagemFragment;
+import com.ifam.amigopetfixo.fragment.ListaFavoritosFragment;
 import com.ifam.amigopetfixo.fragment.VisualizarPetFragment;
 
 public class UsuarioHubActivity extends AppCompatActivity {
@@ -88,6 +89,11 @@ public class UsuarioHubActivity extends AppCompatActivity {
                     editarDoacaoArgs.putString("ID_ITEM", getIntent().getStringExtra("ID_ITEM"));
                     editarDoacaoFragment.setArguments(editarDoacaoArgs);
                     carregarFragment(editarDoacaoFragment);
+                    break;
+
+                case "ListaFavoritos":
+                    getSupportActionBar().setTitle("Marcas de Carinho");
+                    carregarFragment(new ListaFavoritosFragment());
                     break;
 
             }

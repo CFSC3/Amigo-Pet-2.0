@@ -61,16 +61,30 @@
             android:textColor="@color/colorTextPrimary"
             android:textSize="14sp" />
 
-        <!-- Título Meus Pets -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Botões de Ação: Chat e Favorito -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
-            android:text="Pets"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="16dp">
+
+            <!-- Botão de Chat -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnIniciarChat"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Enviar Mensagem"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                app:icon="@drawable/ic_chat"
+                app:iconSize="24dp"
+                app:iconPadding="8dp"
+                app:cornerRadius="24dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@color/colorSurface"/>
+
+        </LinearLayout>
 
         <!-- Carrossel de Pets -->
         <androidx.recyclerview.widget.RecyclerView

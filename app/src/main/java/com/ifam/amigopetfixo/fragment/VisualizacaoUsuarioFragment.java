@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -47,6 +48,8 @@ public class VisualizacaoUsuarioFragment extends Fragment {
 
     private String idUsuarioVisitado;
 
+    private MaterialButton btnIniciarChat;
+
     public VisualizacaoUsuarioFragment() {}
 
     @Override
@@ -63,6 +66,7 @@ public class VisualizacaoUsuarioFragment extends Fragment {
         textBioVisita = view.findViewById(R.id.textBioVisita);
         imagePerfilVisita = view.findViewById(R.id.imagePerfilVisita);
         imageCapaVisita = view.findViewById(R.id.imageCapaVisita);
+        btnIniciarChat = view.findViewById(R.id.btnIniciarChat);
 
         configurarRecyclerViews();
 
@@ -72,6 +76,15 @@ public class VisualizacaoUsuarioFragment extends Fragment {
             textNomeVisita.setText("Usuário não encontrado");
             textBioVisita.setText("");
         }
+
+        btnIniciarChat.setOnClickListener(v -> {
+            if (idUsuarioVisitado != null) {
+                android.content.Intent intent = new android.content.Intent(getContext(), com.ifam.amigopetfixo.activity.ChatHubActivity.class);
+                intent.putExtra("Acao", "AbrirConversa");
+                intent.putExtra("uidDestino", idUsuarioVisitado);
+                startActivity(intent);
+            }
+        });
 
         return view;
     }

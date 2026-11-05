@@ -48,17 +48,25 @@ public class ComentarioAdapter extends RecyclerView.Adapter<ComentarioAdapter.My
         Comentario comentario = listaComentarios.get(position);
         holder.txtTextoComentario.setText(comentario.getTexto());
 
-        usuarioRepository.buscarPerfilParaCabecalho(comentario.getIdUsuario(), new UsuarioRepository.OnPerfilLoadedListener() {
-            @Override
-            public void onSuccess(String username, String fotoUrl) {
-                holder.txtUsernameComentario.setText("@" + username);
-                if (fotoUrl != null && !fotoUrl.equals("default")) {
-                    Glide.with(holder.itemView.getContext()).load(fotoUrl).placeholder(R.drawable.ic_avatar_pet).into(holder.imgAvatarComentario);
+        String idAutor = comentario.getIdUsuario();
+
+        // Bloqueio de segurança no Adapter
+        if (idAutor != null && !idAutor.isEmpty()) {
+            usuarioRepository.buscarPerfilParaCabecalho(idAutor, new UsuarioRepository.OnPerfilLoadedListener() {
+                @Override
+                public void onSuccess(String username, String fotoUrl) {
+                    holder.txtUsernameComentario.setText("@" + username);
+                    if (fotoUrl != null && !fotoUrl.equals("default")) {
+                        Glide.with(holder.itemView.getContext()).load(fotoUrl).placeholder(R.drawable.ic_avatar_pet).into(holder.imgAvatarComentario);
+                    }
                 }
-            }
-            @Override
-            public void onError(String erro) { }
-        });
+                @Override
+                public void onError(String erro) { }
+            });
+        } else {
+            // Fallback visual para comentários sem autor definido
+            holder.txtUsernameComentario.setText("@Desconhecido");
+        }
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent;

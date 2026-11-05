@@ -1,8 +1,11 @@
 package com.ifam.amigopetfixo.activity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -16,6 +19,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.helper.VisitanteHelper;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +32,6 @@ public class Tela_principal extends AppCompatActivity {
 
     private final ActivityResultLauncher<String[]> requestPermissionsLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-
                 Boolean locationGranted = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     locationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
@@ -34,7 +40,6 @@ public class Tela_principal extends AppCompatActivity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     cameraGranted = result.getOrDefault(Manifest.permission.CAMERA, false);
                 }
-
                 Boolean storageGranted = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     storageGranted = result.getOrDefault(Manifest.permission.READ_EXTERNAL_STORAGE, false) ||
@@ -42,7 +47,7 @@ public class Tela_principal extends AppCompatActivity {
                 }
 
                 if (locationGranted && cameraGranted && storageGranted) {
-
+                    // Permissões concedidas
                 } else {
                     Toast.makeText(this, "Algumas permissões foram negadas. O app pode ter funções limitadas.", Toast.LENGTH_LONG).show();
                 }
@@ -63,8 +68,6 @@ public class Tela_principal extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.botao_navegacao);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-
-            // TRAVA DE VISITANTE PARA MAPA E PERFIL
             int id = item.getItemId();
             if (id == R.id.nav_mapa || id == R.id.nav_perfil_usuario) {
                 if (!VisitanteHelper.verificarAcesso(this)) {
@@ -97,6 +100,56 @@ public class Tela_principal extends AppCompatActivity {
         });
 
         solicitarPermissoesGlobais();
+        configurarNotificacoesFCM();
+        verificarRedirecionamentoNotificacao();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        verificarRedirecionamentoNotificacao();
+    }
+
+    private void verificarRedirecionamentoNotificacao() {
+        Intent intent = getIntent();
+        if (intent != null && intent.getExtras() != null) {
+            Bundle extras = intent.getExtras();
+
+            String acao = null;
+            if (extras.containsKey("Acao")) {
+                acao = String.valueOf(extras.get("Acao"));
+            } else if (extras.containsKey("acao")) {
+                acao = String.valueOf(extras.get("acao"));
+            }
+
+            if ("AbrirConversa".equals(acao)) {
+                String uidDestino = extras.containsKey("uidDestino") ? String.valueOf(extras.get("uidDestino")) : null;
+
+                intent.removeExtra("Acao");
+                intent.removeExtra("acao");
+
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    Intent intentChat = new Intent(this, com.ifam.amigopetfixo.activity.ChatHubActivity.class);
+                    intentChat.putExtra("Acao", "AbrirConversa");
+                    intentChat.putExtra("uidDestino", uidDestino);
+                    startActivity(intentChat);
+                }, 300);
+            }
+            else if ("AbrirComentario".equals(acao)) {
+                String idPostagem = extras.containsKey("idPostagem") ? String.valueOf(extras.get("idPostagem")) : null;
+
+                intent.removeExtra("Acao");
+                intent.removeExtra("acao");
+
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    Intent intentThread = new Intent(this, com.ifam.amigopetfixo.activity.UsuarioHubActivity.class);
+                    intentThread.putExtra("Acao", "ThreadPostagem");
+                    intentThread.putExtra("ID_ITEM", idPostagem);
+                    startActivity(intentThread);
+                }, 300);
+            }
+        }
     }
 
     private void solicitarPermissoesGlobais() {
@@ -107,9 +160,27 @@ public class Tela_principal extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissoesParaPedir.add(Manifest.permission.READ_MEDIA_IMAGES);
+            permissoesParaPedir.add(Manifest.permission.POST_NOTIFICATIONS);
         } else {
             permissoesParaPedir.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
         requestPermissionsLauncher.launch(permissoesParaPedir.toArray(new String[0]));
+    }
+
+    private void configurarNotificacoesFCM() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
+        String idUsuarioAtual = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) return;
+
+            String tokenFCM = task.getResult();
+            FirebaseDatabase.getInstance().getReference()
+                    .child("banco-dados")
+                    .child("usuario")
+                    .child(idUsuarioAtual)
+                    .child("tokenFCM")
+                    .setValue(tokenFCM);
+        });
     }
 }

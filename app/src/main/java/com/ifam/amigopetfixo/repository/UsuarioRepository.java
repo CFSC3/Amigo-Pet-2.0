@@ -16,7 +16,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UsuarioRepository {
@@ -177,6 +179,39 @@ public class UsuarioRepository {
         });
     }
 
+    public void buscarUsuariosPorUsername(String query, OnBuscaUsuariosListener listener) {
+        if (query == null || query.trim().isEmpty()) {
+            listener.onSuccess(new ArrayList<>());
+            return;
+        }
+
+        // A busca é feita pelo campo "id" (que guarda o @username)
+        rootRef.child("banco-dados").child("usuario")
+                .orderByChild("id")
+                .startAt(query.toLowerCase())
+                .endAt(query.toLowerCase() + "\uf8ff")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Map<String, String>> listaUsuarios = new ArrayList<>();
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            Map<String, String> usuario = new HashMap<>();
+                            usuario.put("uid", ds.getKey());
+                            usuario.put("username", ds.child("id").getValue(String.class));
+                            usuario.put("nome", ds.child("nome").getValue(String.class));
+                            usuario.put("fotoUrl", ds.child("imageUsuario").getValue(String.class));
+                            listaUsuarios.add(usuario);
+                        }
+                        listener.onSuccess(listaUsuarios);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        listener.onError(error.getMessage());
+                    }
+                });
+    }
+
     // --- INTERFACES ---
     public interface OnPerfilLoadedListener {
         void onSuccess(String username, String fotoUrl);
@@ -186,5 +221,10 @@ public class UsuarioRepository {
     public interface OnUpdateCompleteListener {
         void onSuccess();
         void onFailure(String error);
+    }
+
+    public interface OnBuscaUsuariosListener {
+        void onSuccess(List<Map<String, String>> usuariosEncontrados);
+        void onError(String erro);
     }
 }

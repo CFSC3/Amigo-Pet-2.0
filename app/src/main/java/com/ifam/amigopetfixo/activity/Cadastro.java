@@ -2,6 +2,7 @@ package com.ifam.amigopetfixo.activity;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -13,7 +14,13 @@ import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.helper.AuthCallback;
 import com.ifam.amigopetfixo.helper.DatabaseManager;
@@ -110,38 +117,30 @@ public class Cadastro extends AppCompatActivity implements AuthCallback {
 
     @Override
     public void onSucesso(FirebaseUser user) {
-        if (user != null && user.getMetadata() != null) {
-            long tempoCriacao = user.getMetadata().getCreationTimestamp();
-            long tempoUltimoLogin = user.getMetadata().getLastSignInTimestamp();
+        if (user != null) {
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                    .child("banco-dados").child("usuario").child(user.getUid());
 
-            if (Math.abs(tempoUltimoLogin - tempoCriacao) < 3000) {
-                databaseManager.criarPerfilInicial(user.getUid(), user.getEmail());
-                startActivity(new Intent(this, Apresentacao.class));
-                finish();
-            } else {
-                Toast.makeText(this, "Você já tem uma conta! Fazendo login...", Toast.LENGTH_LONG).show();
-
-                com.google.firebase.database.DatabaseReference ref = com.google.firebase.database.FirebaseDatabase.getInstance().getReference()
-                        .child("banco-dados").child("usuario").child(user.getUid());
-
-                ref.addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
-                    @Override
-                    public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
-                        if (snapshot.exists() && snapshot.child("id").exists() && !snapshot.child("id").getValue(String.class).isEmpty()) {
-                            startActivity(new Intent(Cadastro.this, Tela_principal.class));
-                        } else {
-                            startActivity(new Intent(Cadastro.this, SetupPerfilActivity.class));
-                        }
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        // O usuário já existe. Bloqueia a sessão, desloga e avisa, mantendo na mesma tela.
+                        FirebaseAuth.getInstance().signOut();
+                        Toast.makeText(Cadastro.this, "Você já possui uma conta cadastrada.", Toast.LENGTH_LONG).show();
+                    } else {
+                        // É uma conta nova de verdade. Cria o perfil e manda para a Apresentação.
+                        databaseManager.criarPerfilInicial(user.getUid(), user.getEmail());
+                        startActivity(new Intent(Cadastro.this, Apresentacao.class));
                         finish();
                     }
+                }
 
-                    @Override
-                    public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {
-                        startActivity(new Intent(Cadastro.this, Tela_principal.class));
-                        finish();
-                    }
-                });
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(Cadastro.this, "Erro ao verificar conta.", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

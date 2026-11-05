@@ -2,6 +2,7 @@ package com.ifam.amigopetfixo.activity;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -12,6 +13,11 @@ import android.widget.Toast;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.helper.AuthCallback;
 import com.ifam.amigopetfixo.helper.EmailLoginManager;
@@ -131,24 +137,31 @@ public class LoginT extends AppCompatActivity implements AuthCallback {
 
     @Override
     public void onSucesso(FirebaseUser user) {
-        com.google.firebase.database.DatabaseReference ref = com.google.firebase.database.FirebaseDatabase.getInstance().getReference()
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
                 .child("banco-dados").child("usuario").child(user.getUid());
 
-        ref.addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@androidx.annotation.NonNull com.google.firebase.database.DataSnapshot snapshot) {
-                if (snapshot.exists() && snapshot.child("id").exists() && !snapshot.child("id").getValue(String.class).isEmpty()) {
-                    startActivity(new Intent(LoginT.this, Tela_principal.class));
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    if (snapshot.child("id").exists() && !snapshot.child("id").getValue(String.class).isEmpty()) {
+                        startActivity(new Intent(LoginT.this, Tela_principal.class));
+                    } else {
+                        startActivity(new Intent(LoginT.this, SetupPerfilActivity.class));
+                    }
+                    finish();
                 } else {
-                    startActivity(new Intent(LoginT.this, SetupPerfilActivity.class));
+                    user.delete().addOnCompleteListener(task -> {
+                        Toast.makeText(LoginT.this, "Você não possui uma conta cadastrada. Crie uma conta.", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(LoginT.this, Cadastro.class));
+                        finish();
+                    });
                 }
-                finish();
             }
 
             @Override
-            public void onCancelled(@androidx.annotation.NonNull com.google.firebase.database.DatabaseError error) {
-                startActivity(new Intent(LoginT.this, Tela_principal.class));
-                finish();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(LoginT.this, "Erro ao verificar conta.", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -45,7 +45,7 @@ import java.util.List;
 public class PerfilUsuarioFragment extends Fragment {
 
     private MaterialButton btnEditarPerfil, btnAdicionarPet;
-    private ImageButton btnMenuConfiguracoes;
+    private ImageButton btnMenuConfiguracoes, btnMeusFavoritos;
     private RecyclerView recyclerPetsCarrossel, recyclerFeedUsuario;
     private TextView textNomePerfil, textBioPerfil;
     private ImageView imageCapaPerfil;
@@ -73,6 +73,7 @@ public class PerfilUsuarioFragment extends Fragment {
         btnEditarPerfil = view.findViewById(R.id.btnEditarPerfil);
         btnAdicionarPet = view.findViewById(R.id.btnAdicionarPet);
         btnMenuConfiguracoes = view.findViewById(R.id.btnMenuConfiguracoes);
+        btnMeusFavoritos = view.findViewById(R.id.btnMeusFavoritos);
         recyclerPetsCarrossel = view.findViewById(R.id.recyclerPetsCarrossel);
         recyclerFeedUsuario = view.findViewById(R.id.recyclerFeedUsuario);
         textNomePerfil = view.findViewById(R.id.textNomePerfil);
@@ -292,6 +293,14 @@ public class PerfilUsuarioFragment extends Fragment {
         btnMenuConfiguracoes.setOnClickListener(v -> {
             if (getActivity() != null) {
                 Intent intent = new Intent(getActivity(), ConfiguracoesHubActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnMeusFavoritos.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), UsuarioHubActivity.class);
+                intent.putExtra("Acao", "ListaFavoritos");
                 startActivity(intent);
             }
         });
