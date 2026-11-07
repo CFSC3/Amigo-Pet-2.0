@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base Quente (Acolhimento & Marca) - Ajustado para Modo Noturno -->
-    <color name="colorPrimary">#FA9335</color>
-    <color name="colorPrimaryDark">#C8600C</color>
-    <color name="colorAccent">#FAD058</color>
+    <!-- Base Quente (Efeito "Glow" iluminado sobre o fundo escuro) -->
+    <color name="colorPrimary">#FFB74D</color> <!-- Laranja claro brilhante -->
+    <color name="colorPrimaryDark">#F57C00</color>
+    <color name="colorAccent">#FFE082</color> <!-- Amarelo suave e legível -->
 
-    <!-- Ação & Contraste (Confiança & Saúde) -->
-    <color name="colorTeal">#3CB6A8</color>
+    <!-- Ação & Contraste -->
+    <color name="colorTeal">#4DD0E1</color> <!-- Cyan/Teal neon para excelente destaque -->
 
-    <!-- Cores Neutras & Apoio (Leitura & Superfícies no Escuro) -->
-    <color name="colorBackground">#121214</color>
-    <color name="colorSurface">#1E1E24</color>
-    <color name="colorTextPrimary">#EAE6E1</color>
-    <color name="colorDivider">#2C2C35</color>
+    <!-- Cores Neutras & Apoio (Superfícies Modernas) -->
+    <color name="colorBackground">#121212</color> <!-- Fundo escuro padrão moderno  -->
+    <color name="colorSurface">#1E1E1E</color> <!-- Elevação sutil para os cards -->
+    <color name="colorTextPrimary">#F5F5F5</color> <!-- Branco suave, excelente leitura sem ofuscar -->
+    <color name="colorDivider">#333333</color>
     <color name="colorShadow">#000000</color>
 
     <!-- Cores herdadas ajustadas para o modo escuro -->
-    <color name="branco">#1E1E24</color>
-    <color name="tt">#FAD058</color>
-    <color name="ttt">#FAD058</color>
-    <color name="tg">#3CB6A8</color>
-    <color name="branco_translucido">#821E1E24</color>
-    <color name="branco_translucidoo">#831E1E24</color>
+    <color name="branco">#1E1E1E</color>
+    <color name="tt">#FFE082</color>
+    <color name="ttt">#FFE082</color>
+    <color name="tg">#4DD0E1</color>
+    <color name="branco_translucido">#821E1E1E</color>
+    <color name="branco_translucidoo">#831E1E1E</color>
     <color name="invisivl">#1F000000</color>
-    <color name="linhaDesign">#2C2C35</color>
+    <color name="linhaDesign">#333333</color>
+
+    <!-- Apresentação Amigo Pet (Ajustadas para Modo Escuro) -->
+    <color name="cor_slide_boas_vindas">#4E342E</color>
+    <color name="cor_slide_comunidade">#4A148C</color>
+    <color name="cor_slide_mapa">#1B5E20</color>
+    <color name="cor_slide_adocao">#3E2723</color>
 </resources>

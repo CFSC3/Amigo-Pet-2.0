@@ -38,14 +38,14 @@ import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.adapter.AdocoesAdapter;
 import com.ifam.amigopetfixo.adapter.FeedUsuarioAdapter;
 import com.ifam.amigopetfixo.adapter.PetCarrosselAdapter;
+import com.ifam.amigopetfixo.adapter.PostagemAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PerfilUsuarioFragment extends Fragment {
 
-    private MaterialButton btnEditarPerfil, btnAdicionarPet;
-    private ImageButton btnMenuConfiguracoes, btnMeusFavoritos;
+    private ImageButton btnEditarPerfil, btnMenuConfiguracoes, btnMeusFavoritos;
     private RecyclerView recyclerPetsCarrossel, recyclerFeedUsuario;
     private TextView textNomePerfil, textBioPerfil;
     private ImageView imageCapaPerfil;
@@ -63,6 +63,8 @@ public class PerfilUsuarioFragment extends Fragment {
     private MaterialButtonToggleGroup toggleGroupFeed;
     private AdocoesAdapter doacoesAdapter;
     private List<Adocoes> listaDoacoesUsuario = new ArrayList<>();
+    private com.ifam.amigopetfixo.adapter.PostagemAdapter publicacoesAdapter;
+    private List<Postagem> listaPublicacoes = new ArrayList<>();
 
     public PerfilUsuarioFragment() {}
 
@@ -71,7 +73,6 @@ public class PerfilUsuarioFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_perfil_usuario, container, false);
 
         btnEditarPerfil = view.findViewById(R.id.btnEditarPerfil);
-        btnAdicionarPet = view.findViewById(R.id.btnAdicionarPet);
         btnMenuConfiguracoes = view.findViewById(R.id.btnMenuConfiguracoes);
         btnMeusFavoritos = view.findViewById(R.id.btnMeusFavoritos);
         recyclerPetsCarrossel = view.findViewById(R.id.recyclerPetsCarrossel);
@@ -102,18 +103,24 @@ public class PerfilUsuarioFragment extends Fragment {
 
         }
 
-        doacoesAdapter = new com.ifam.amigopetfixo.adapter.AdocoesAdapter(listaDoacoesUsuario, adocao -> {
+        doacoesAdapter = new AdocoesAdapter(listaDoacoesUsuario, adocao -> {
             Intent intent = new Intent(getActivity(), UsuarioHubActivity.class);
             intent.putExtra("Acao", "DetalheDoacaoProprietario");
             intent.putExtra("ID_ITEM", adocao.getIdAdocao());
             startActivity(intent);
         });
 
+        publicacoesAdapter = new PostagemAdapter(listaPublicacoes, true);
+
         toggleGroupFeed.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.btnAbaPostagens) {
                     recyclerFeedUsuario.setLayoutManager(new GridLayoutManager(getContext(), 3));
                     recyclerFeedUsuario.setAdapter(feedAdapter);
+                } else if (checkedId == R.id.btnAbaPublicacoes) {
+                    // Muda para lista linear e usa o adapter que já tem o design sem foto (estilo Twitter)
+                    recyclerFeedUsuario.setLayoutManager(new LinearLayoutManager(getContext()));
+                    recyclerFeedUsuario.setAdapter(publicacoesAdapter);
                 } else if (checkedId == R.id.btnAbaDoacoes) {
                     recyclerFeedUsuario.setLayoutManager(new LinearLayoutManager(getContext()));
                     recyclerFeedUsuario.setAdapter(doacoesAdapter);
@@ -186,8 +193,10 @@ public class PerfilUsuarioFragment extends Fragment {
 
     private void carregarPostagensUsuario(DataSnapshot postagensSnapshot) {
         listaPostagensFeed.clear();
+        listaPublicacoes.clear();
         if (!postagensSnapshot.exists()) {
             feedAdapter.notifyDataSetChanged();
+            publicacoesAdapter.notifyDataSetChanged();
             return;
         }
 
@@ -207,8 +216,13 @@ public class PerfilUsuarioFragment extends Fragment {
                 if (snapshot.exists()) {
                     Postagem postagem = snapshot.getValue(Postagem.class);
                     if (postagem != null) {
-                        listaPostagensFeed.add(0, postagem);
-                        feedAdapter.notifyDataSetChanged();
+                        if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
+                            listaPublicacoes.add(0, postagem);
+                            publicacoesAdapter.notifyDataSetChanged();
+                        } else {
+                            listaPostagensFeed.add(0, postagem);
+                            feedAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
             }
@@ -277,15 +291,6 @@ public class PerfilUsuarioFragment extends Fragment {
             if (getActivity() != null) {
                 Intent intent = new Intent(getActivity(), UsuarioHubActivity.class);
                 intent.putExtra("Acao", "EditarPerfil");
-                startActivity(intent);
-            }
-        });
-
-        // Já deixei o do Pet pronto também!
-        btnAdicionarPet.setOnClickListener(v -> {
-            if (getActivity() != null) {
-                Intent intent = new Intent(getActivity(), UsuarioHubActivity.class);
-                intent.putExtra("Acao", "AdicionarPet");
                 startActivity(intent);
             }
         });

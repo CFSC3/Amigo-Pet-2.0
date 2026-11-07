@@ -70,6 +70,7 @@
                     android:id="@+id/editNome"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="40"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -86,6 +87,7 @@
                     android:id="@+id/editDescricao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="120"
                     android:inputType="textMultiLine"
                     android:lines="3" />
             </com.google.android.material.textfield.TextInputLayout>

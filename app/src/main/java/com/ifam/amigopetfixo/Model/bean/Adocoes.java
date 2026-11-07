@@ -9,6 +9,7 @@ public class Adocoes {
     private String endereco;
     private String bairro;
     private String estado;
+    private String cidade;
     private String contato;
     private String titulo;
     private String idAdocao;
@@ -50,6 +51,9 @@ public class Adocoes {
     public void setEstado(String estado) {
         this.estado = estado;
     }
+
+    public String getCidade() { return cidade; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }

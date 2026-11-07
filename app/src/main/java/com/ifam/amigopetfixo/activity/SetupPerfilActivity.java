@@ -33,9 +33,10 @@ public class SetupPerfilActivity extends AppCompatActivity {
     private TextInputEditText editNomeExibicao;
     private TextInputEditText editUsername;
     private TextInputLayout inputLayoutUsername;
+    private TextInputLayout inputLayoutNome;
     private MaterialButton btnConcluirSetup;
 
-    private Uri imagemSelecionadaUri;
+    private Uri imagemSelecionadaUri = null;
     private boolean usernameValido = false;
 
     private UsuarioRepository usuarioRepository;
@@ -58,6 +59,7 @@ public class SetupPerfilActivity extends AppCompatActivity {
         editNomeExibicao = findViewById(R.id.editNomeExibicao);
         editUsername = findViewById(R.id.editUsername);
         inputLayoutUsername = findViewById(R.id.inputLayoutUsername);
+        inputLayoutNome = findViewById(R.id.inputLayoutNome);
         btnConcluirSetup = findViewById(R.id.btnConcluirSetup);
     }
 
@@ -114,11 +116,20 @@ public class SetupPerfilActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 String idDigitado = s.toString().trim().toLowerCase();
-                if (idDigitado.length() < 6) {
-                    inputLayoutUsername.setError("O ID deve ter pelo menos 6 caracteres.");
+
+                // Sem ponto, sem espaço, sem acento
+                if (!idDigitado.matches("^[a-z0-9_]{8,}$")) {
+                    if (idDigitado.length() < 8) {
+                        inputLayoutUsername.setError("O ID deve ter pelo menos 8 caracteres.");
+                    } else {
+                        inputLayoutUsername.setError("Use apenas letras, números e underline (_).");
+                    }
                     usernameValido = false;
-                    return;
+                    return; // Interrompe aqui, não deixa ir pro Firebase e bugar tudo
                 }
+
+                inputLayoutUsername.setError(null);
+                inputLayoutUsername.setHelperText("Verificando disponibilidade...");
 
                 usuarioRepository.verificarIdDisponivel(idDigitado, new UsernameCheckCallback() {
                     @Override
@@ -128,13 +139,16 @@ public class SetupPerfilActivity extends AppCompatActivity {
                             inputLayoutUsername.setHelperText("ID disponível!");
                             usernameValido = true;
                         } else {
+                            inputLayoutUsername.setHelperText(null);
                             inputLayoutUsername.setError("Esse ID já está em uso.");
                             usernameValido = false;
                         }
                     }
                     @Override
                     public void onError(String errorMessage) {
-                        Toast.makeText(SetupPerfilActivity.this, "Erro ao verificar rede", Toast.LENGTH_SHORT).show();
+                        inputLayoutUsername.setHelperText(null);
+                        inputLayoutUsername.setError("Erro de rede. Tente novamente.");
+                        usernameValido = false;
                     }
                 });
             }
@@ -142,14 +156,29 @@ public class SetupPerfilActivity extends AppCompatActivity {
     }
 
     private boolean validarCampos() {
-        if (editNomeExibicao.getText().toString().trim().isEmpty()) {
-            editNomeExibicao.setError("Digite seu nome.");
+        // Trava 1: Imagem Obrigatória
+        if (imagemSelecionadaUri == null) {
+            Toast.makeText(this, "Por favor, adicione uma foto de perfil.", Toast.LENGTH_SHORT).show();
             return false;
         }
+
+        // Trava 2: Nome Real (Mínimo de 4 letras)
+        String nomeDigitado = editNomeExibicao.getText().toString().trim();
+        if (nomeDigitado.isEmpty() || nomeDigitado.length() < 4) {
+            inputLayoutNome.setError("Seu nome deve ter pelo menos 4 caracteres.");
+            editNomeExibicao.requestFocus();
+            return false;
+        } else {
+            inputLayoutNome.setError(null);
+        }
+
+        // Trava 3: Username Aprovado
         if (!usernameValido) {
-            Toast.makeText(this, "Escolha um ID válido e disponível.", Toast.LENGTH_SHORT).show();
+            inputLayoutUsername.setError("Escolha um ID válido e disponível.");
+            editUsername.requestFocus();
             return false;
         }
+
         return true;
     }
 
@@ -158,18 +187,19 @@ public class SetupPerfilActivity extends AppCompatActivity {
         String idDesejado = editUsername.getText().toString().trim().toLowerCase();
 
         btnConcluirSetup.setEnabled(false);
+        btnConcluirSetup.setText("Salvando...");
 
         usuarioRepository.salvarPerfilCompleto(nome, idDesejado, imagemSelecionadaUri, new UsuarioRepository.OnUpdateCompleteListener() {
             @Override
             public void onSuccess() {
                 Intent intent = new Intent(SetupPerfilActivity.this, Tela_principal.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Limpa o histórico de telas
                 startActivity(intent);
                 finish();
             }
 
             @Override
             public void onFailure(String error) {
-                Toast.makeText(SetupPerfilActivity.this, "Erro ao salvar: " + error, Toast.LENGTH_LONG).show();
                 btnConcluirSetup.setEnabled(true);
                 btnConcluirSetup.setText("Pronto, vamos começar!");
             }

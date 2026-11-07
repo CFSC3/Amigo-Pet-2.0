@@ -7,6 +7,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.ifam.amigopetfixo.Model.bean.Mensagem;
 import android.net.Uri;
 import com.google.firebase.storage.FirebaseStorage;
@@ -29,7 +30,8 @@ public class ChatRepository {
         void onErro(String erro);
     }
 
-    public void enviarMensagemTexto(String idSalaChat, String idRemetente, String idDestino, String texto) {
+    // Agora recebe os parâmetros de citação (podem ser null se não for resposta)
+    public void enviarMensagemTexto(String idSalaChat, String idRemetente, String idDestino, String texto, Mensagem citacao) {
         DatabaseReference mensagemRef = rootRef.child("Mensagens").child(idSalaChat).push();
         String idMensagem = mensagemRef.getKey();
         long tempoAtual = System.currentTimeMillis();
@@ -41,29 +43,65 @@ public class ChatRepository {
         mensagem.setTipoMensagem("texto");
         mensagem.setDataHora(tempoAtual);
 
+        // Se houver uma citação, anexa ao nó
+        if (citacao != null) {
+            mensagem.setIdMensagemCitada(citacao.getIdMensagem());
+            mensagem.setTextoMensagemCitada(citacao.getTexto() != null ? citacao.getTexto() : "Mídia");
+            mensagem.setAutorMensagemCitada(citacao.getIdRemetente().equals(idRemetente) ? "Você" : "Outro");
+        }
+
         mensagemRef.setValue(mensagem).addOnSuccessListener(aVoid -> {
             atualizarGavetaRecentes(idRemetente, idDestino, texto, tempoAtual, idSalaChat, true);
             atualizarGavetaRecentes(idDestino, idRemetente, texto, tempoAtual, idSalaChat, false);
         });
     }
 
-    public void ouvirMensagens(String idSalaChat, MensagemCallback callback) {
+    public void ouvirMensagens(String idSalaChat, String idUsuarioAtual, MensagemCallback callback) {
         salaRef = rootRef.child("Mensagens").child(idSalaChat);
 
-        mensagensListener = salaRef.addChildEventListener(new ChildEventListener() {
+        salaRef.child("exclusoes").child(idUsuarioAtual).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Mensagem mensagem = snapshot.getValue(Mensagem.class);
-                if (mensagem != null) {
-                    callback.onMensagemRecebida(mensagem);
-                }
+            public void onDataChange(@NonNull DataSnapshot snapshotExclusao) {
+                long tempoCorteExclusao = snapshotExclusao.exists() ? snapshotExclusao.getValue(Long.class) : 0L;
+
+                mensagensListener = salaRef.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        if (snapshot.getKey().equals("exclusoes")) return;
+
+                        Mensagem mensagem = snapshot.getValue(Mensagem.class);
+                        if (mensagem != null && mensagem.getDataHora() > tempoCorteExclusao) {
+
+                            if (!mensagem.getIdRemetente().equals(idUsuarioAtual)) {
+                                rootRef.child("Conversas").child(idUsuarioAtual).child(idSalaChat)
+                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshotConversa) {
+                                                if (snapshotConversa.exists()) {
+                                                    snapshotConversa.getRef().child("lida").setValue(true);
+                                                }
+                                            }
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {}
+                                        });
+                            }
+
+                            callback.onMensagemRecebida(mensagem);
+                        }
+                    }
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {}
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {}
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {}
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onErro(error.getMessage());
+                    }
+                });
             }
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {}
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {}
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {}
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 callback.onErro(error.getMessage());
@@ -71,11 +109,9 @@ public class ChatRepository {
         });
     }
 
-    public void enviarMidia(String idSalaChat, String idRemetente, String idDestino, Uri uriMidia, String tipoMidia) {
+    public void enviarMidia(String idSalaChat, String idRemetente, String idDestino, Uri uriMidia, String tipoMidia, Mensagem citacao) {
         StorageReference storageRef = FirebaseStorage.getInstance().getReference()
-                .child("MidiaChat")
-                .child(idSalaChat)
-                .child(System.currentTimeMillis() + "_" + tipoMidia);
+                .child("MidiaChat").child(idSalaChat).child(System.currentTimeMillis() + "_" + tipoMidia);
 
         storageRef.putFile(uriMidia).addOnSuccessListener(taskSnapshot -> {
             storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
@@ -89,10 +125,14 @@ public class ChatRepository {
                 mensagem.setTipoMensagem(tipoMidia);
                 mensagem.setDataHora(tempoAtual);
 
-                String textoResumo = tipoMidia.equals("imagem") ? "📷 Foto" : "🎥 Vídeo";
+                if (citacao != null) {
+                    mensagem.setIdMensagemCitada(citacao.getIdMensagem());
+                    mensagem.setTextoMensagemCitada(citacao.getTexto() != null ? citacao.getTexto() : "Mídia");
+                    mensagem.setAutorMensagemCitada(citacao.getIdRemetente().equals(idRemetente) ? "Você" : "Outro");
+                }
 
+                String textoResumo = tipoMidia.equals("imagem") ? "📷 Foto" : "🎥 Vídeo";
                 mensagemRef.setValue(mensagem).addOnSuccessListener(aVoid -> {
-                    // Atualizado para incluir o estado "lida"
                     atualizarGavetaRecentes(idRemetente, idDestino, textoResumo, tempoAtual, idSalaChat, true);
                     atualizarGavetaRecentes(idDestino, idRemetente, textoResumo, tempoAtual, idSalaChat, false);
                 });
@@ -101,16 +141,14 @@ public class ChatRepository {
     }
 
     public void excluirChatLogicamente(String idSalaChat, String idUsuarioAtual, String idDestino, Runnable onSuccess) {
+        // Remove da lista de recentes
         rootRef.child("Conversas").child(idUsuarioAtual).child(idSalaChat).removeValue();
-
-        rootRef.child("Mensagens").child(idSalaChat)
-                .child("exclusoes")
-                .child(idUsuarioAtual)
+        // Salva a data de corte dentro das mensagens
+        rootRef.child("Mensagens").child(idSalaChat).child("exclusoes").child(idUsuarioAtual)
                 .setValue(System.currentTimeMillis())
                 .addOnSuccessListener(aVoid -> onSuccess.run());
     }
 
-    // Mantida apenas a versão correta e atualizada do método
     private void atualizarGavetaRecentes(String donoDoNo, String idDestinatario, String ultimaMensagem, long timestamp, String idSalaChat, boolean lida) {
         Map<String, Object> mapChat = new HashMap<>();
         mapChat.put("idSalaChat", idSalaChat);
@@ -118,7 +156,6 @@ public class ChatRepository {
         mapChat.put("ultimaMensagem", ultimaMensagem);
         mapChat.put("timestamp", timestamp);
         mapChat.put("lida", lida);
-
         rootRef.child("Conversas").child(donoDoNo).child(idSalaChat).updateChildren(mapChat);
     }
 

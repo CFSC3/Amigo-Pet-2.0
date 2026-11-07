@@ -9,7 +9,7 @@
         android:id="@+id/toolbarAdocoes"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/ttt"
+        android:background="@color/colorPrimary"
         android:elevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,55 +25,77 @@
             android:textStyle="bold" />
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- SELETORES MODERNOS (Material Design) -->
+    <!-- SELETORES MODERNOS -->
     <LinearLayout
         android:id="@+id/layoutFiltrosAvancados"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:paddingHorizontal="16dp"
         android:paddingTop="16dp"
         app:layout_constraintTop_toBottomOf="@+id/toolbarAdocoes">
 
+        <!-- Estado  -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            app:boxCornerRadiusTopStart="8dp"
-            app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusBottomStart="8dp"
-            app:boxCornerRadiusBottomEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:hint="Estado">
 
             <AutoCompleteTextView
                 android:id="@+id/autoCompleteEstado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:text="Amazonas" />
+                android:maxLines="1"
+                android:singleLine="true"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
+        <!-- Cidade e Data -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            app:boxCornerRadiusTopStart="8dp"
-            app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusBottomStart="8dp"
-            app:boxCornerRadiusBottomEnd="8dp"
-            android:hint="Data">
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:weightSum="2">
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCompleteTempo"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:text="Recentes" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:hint="Cidade">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteCidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:hint="Data">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteTempo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- BARRA DE CATEGORIAS (CHIPS) -->
@@ -172,7 +194,7 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="124dp"
         android:src="@drawable/ic_add_black_24dp"
-        app:backgroundTint="@color/ttt"
+        app:backgroundTint="@color/colorPrimary"
         app:elevation="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

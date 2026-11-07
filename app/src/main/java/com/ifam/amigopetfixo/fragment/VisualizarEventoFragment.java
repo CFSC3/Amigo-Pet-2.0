@@ -85,6 +85,8 @@ public class VisualizarEventoFragment extends Fragment {
         txtTituloDetalheEvento.setText(evento.getTitulo());
         txtDescricaoDetalheEvento.setText(evento.getDescricao());
 
+        android.text.util.Linkify.addLinks(txtDescricaoDetalheEvento, android.text.util.Linkify.WEB_URLS);
+
         // Lógica Inteligente para Data
         String dataExibicao;
         if (evento.getDataEvento().equals(evento.getDataEventoFim())) {

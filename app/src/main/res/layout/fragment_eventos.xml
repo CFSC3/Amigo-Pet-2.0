@@ -10,12 +10,12 @@
         android:id="@+id/materialToolbar2"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorSurface"
+        android:background="@color/colorPrimary"
         app:elevation="2dp"
         app:layout_constraintTop_toTopOf="parent"
         app:title="Amigo Pet"
         app:titleCentered="true"
-        app:titleTextColor="@color/colorTextPrimary" />
+        app:titleTextColor="@color/branco" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reciclerView2"

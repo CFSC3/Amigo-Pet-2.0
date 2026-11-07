@@ -45,6 +45,7 @@
                     android:id="@+id/editTextTitulo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="40"
                     android:inputType="textCapSentences" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -59,6 +60,7 @@
                     android:id="@+id/editTextDescricao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="1200"
                     android:lines="3"
                     android:inputType="textMultiLine|textCapSentences" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -136,7 +138,23 @@
                     android:id="@+id/editTextEndereco"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="40"
                     android:inputType="textPostalAddress" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Cidade Atual">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextCidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLength="30"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -150,6 +168,7 @@
                     android:id="@+id/editTextBairro"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="30"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -164,6 +183,7 @@
                     android:id="@+id/editTextContato"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="11"
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -191,7 +211,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="Publicar"
+                    android:text="Doar"
                     android:backgroundTint="@color/ttt"
                     android:textColor="@color/branco" />
             </LinearLayout>

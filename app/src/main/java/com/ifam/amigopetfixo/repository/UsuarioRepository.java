@@ -179,30 +179,36 @@ public class UsuarioRepository {
         });
     }
 
-    public void buscarUsuariosPorUsername(String query, OnBuscaUsuariosListener listener) {
-        if (query == null || query.trim().isEmpty()) {
+    public void buscarUsuariosMultiplos(String queryOriginal, OnBuscaUsuariosListener listener) {
+        if (queryOriginal == null || queryOriginal.trim().isEmpty()) {
             listener.onSuccess(new ArrayList<>());
             return;
         }
 
-        // A busca é feita pelo campo "id" (que guarda o @username)
+        String queryLimpa = queryOriginal.toLowerCase().trim().replace("@", "");
+
         rootRef.child("banco-dados").child("usuario")
-                .orderByChild("id")
-                .startAt(query.toLowerCase())
-                .endAt(query.toLowerCase() + "\uf8ff")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        List<Map<String, String>> listaUsuarios = new ArrayList<>();
+                        List < Map < String , String > > usuariosEncontrados = new ArrayList<>();
                         for (DataSnapshot ds : snapshot.getChildren()) {
-                            Map<String, String> usuario = new HashMap<>();
-                            usuario.put("uid", ds.getKey());
-                            usuario.put("username", ds.child("id").getValue(String.class));
-                            usuario.put("nome", ds.child("nome").getValue(String.class));
-                            usuario.put("fotoUrl", ds.child("imageUsuario").getValue(String.class));
-                            listaUsuarios.add(usuario);
+                            String id = ds.child("id").getValue(String.class);
+                            String nome = ds.child("nome").getValue(String.class);
+
+                            boolean matchUsername = id != null && id.toLowerCase().startsWith(queryLimpa);
+                            boolean matchNome = nome != null && (nome.toLowerCase().startsWith(queryLimpa) || nome.toLowerCase().contains(" " + queryLimpa));
+
+                            if (matchUsername || matchNome) {
+                                Map<String, String> usuario = new HashMap<>();
+                                usuario.put("uid", ds.getKey());
+                                usuario.put("username", id);
+                                usuario.put("nome", nome);
+                                usuario.put("fotoUrl", ds.child("imageUsuario").getValue(String.class));
+                                usuariosEncontrados.add(usuario);
+                            }
                         }
-                        listener.onSuccess(listaUsuarios);
+                        listener.onSuccess(usuariosEncontrados);
                     }
 
                     @Override
@@ -210,6 +216,15 @@ public class UsuarioRepository {
                         listener.onError(error.getMessage());
                     }
                 });
+    }
+
+    private Map<String, String> extrairDadosUsuario(DataSnapshot ds) {
+        Map<String, String> usuario = new HashMap<>();
+        usuario.put("uid", ds.getKey());
+        usuario.put("username", ds.child("id").getValue(String.class));
+        usuario.put("nome", ds.child("nome").getValue(String.class));
+        usuario.put("fotoUrl", ds.child("imageUsuario").getValue(String.class));
+        return usuario;
     }
 
     // --- INTERFACES ---

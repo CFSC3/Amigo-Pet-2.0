@@ -1,34 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base Quente (Acolhimento & Marca) -->
-    <color name="colorPrimary">#F6A800</color>
-    <color name="colorPrimaryDark">#C26710</color>
-    <color name="colorAccent">#F9C74F</color>
+    <!-- Base Quente (Vida & Energia) -->
+    <color name="colorPrimary">#FF9800</color> <!-- Laranja vibrante, amigável e cheio de vida -->
+    <color name="colorPrimaryDark">#F57C00</color>
+    <color name="colorAccent">#FFC107</color> <!-- Amarelo iluminado -->
 
     <!-- Ação & Contraste (Confiança & Saúde) -->
-    <color name="colorTeal">#2A9D8F</color>
+    <color name="colorTeal">#00B4D8</color> <!-- Teal/Azul vivo e alegre -->
 
-    <!-- Cores Neutras & Apoio (Leitura & Leveza) -->
-    <color name="colorBackground">#FDFBF7</color>
+    <!-- Cores Neutras & Apoio -->
+    <color name="colorBackground">#FDFBF7</color> <!-- Mantém o aconchego do fundo original -->
     <color name="colorSurface">#FFFFFF</color>
-    <color name="colorTextPrimary">#2D3142</color>
-    <color name="colorDivider">#C5CBD3</color>
+    <color name="colorTextPrimary">#212121</color> <!-- Contraste perfeito para leitura -->
+    <color name="colorDivider">#E0E0E0</color>
     <color name="colorShadow">#1E202B</color>
 
-    <!-- Cores herdadas (Mantidas para não quebrar as telas atuais antes da refatoração completa) -->
+    <!-- Cores herdadas (Mantidas para não quebrar as telas atuais) -->
     <color name="branco">#FFFFFF</color>
-    <color name="tt">#F9C74F</color>
-    <color name="ttt">#F9C74F</color>
-    <color name="tg">#2A9D8F</color>
+    <color name="tt">#FFC107</color>
+    <color name="ttt">#FFC107</color>
+    <color name="tg">#00B4D8</color>
     <color name="branco_translucido">#82FFFFFF</color>
     <color name="branco_translucidoo">#83FFFFFF</color>
     <color name="invisivl">#1F000000</color>
-    <color name="linhaDesign">#C5CBD3</color>
+    <color name="linhaDesign">#E0E0E0</color>
 
     <!-- Cores da Apresentação Amigo Pet -->
     <color name="cor_slide_boas_vindas">#FFB74D</color>
     <color name="cor_slide_comunidade">#BA68C8</color>
     <color name="cor_slide_mapa">#81C784</color>
     <color name="cor_slide_adocao">#FFF176</color>
-
 </resources>

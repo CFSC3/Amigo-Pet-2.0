@@ -18,11 +18,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.ifam.amigopetfixo.Model.bean.Postagem;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.activity.AdicionarHubActivity;
@@ -30,6 +25,8 @@ import com.ifam.amigopetfixo.adapter.PesquisaUsuarioAdapter;
 import com.ifam.amigopetfixo.adapter.PostagemAdapter;
 import com.ifam.amigopetfixo.helper.VisitanteHelper;
 import com.ifam.amigopetfixo.repository.UsuarioRepository;
+import com.ifam.amigopetfixo.usecase.FeedUseCase;
+import com.ifam.amigopetfixo.usecase.PesquisaPostagemUseCase;
 import com.ifam.amigopetfixo.usecase.PesquisaUsuarioUseCase;
 
 import java.util.ArrayList;
@@ -38,26 +35,28 @@ import java.util.Map;
 
 public class PostagensFragment extends Fragment {
 
-    private RecyclerView recyclerPostagem;
+    // Views
+    private RecyclerView recyclerPostagem, recyclerPesquisa;
     private TextView textFeedVazio;
     private FloatingActionButton fabAdicionarPost;
     private SwipeRefreshLayout swipeRefreshFeed;
+    private MaterialToolbar toolbar;
 
-    private PostagemAdapter adapter;
-    private List<Postagem> postagens = new ArrayList<>();
+    // Adapters e Listas
+    private PostagemAdapter adapterFeed;
+    private List<Postagem> listaPostagens = new ArrayList<>();
 
-    private DatabaseReference postagensRef = FirebaseDatabase.getInstance().getReference()
-            .child("banco-dados").child("Postagens");
-
+    // UseCases (Regras de Negócio e Paginação)
+    private FeedUseCase feedUseCase;
+    private PesquisaUsuarioUseCase pesquisaUsuarioUseCase;
+    private PesquisaPostagemUseCase pesquisaPostagemUseCase;
     private UsuarioRepository usuarioRepository;
 
-    private androidx.appcompat.widget.SearchView searchView;
-    private RecyclerView recyclerPesquisa;
-    private PesquisaUsuarioUseCase pesquisaUseCase;
+    // Estado Atual
+    private boolean isModoPesquisaPost = false;
+    private String queryPostAtual = "";
 
-    public PostagensFragment() {
-
-    }
+    public PostagensFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,188 +67,286 @@ public class PostagensFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        inicializarComponentes(view);
+        configurarToolbarEMenus();
+        configurarRecyclerViews();
+        configurarScrollInfinito();
+
+        // Carrega o primeiro lote de 25 feeds ao abrir
+        carregarFeedPrincipal(true);
+
+        swipeRefreshFeed.setOnRefreshListener(() -> {
+            if (isModoPesquisaPost) {
+                pesquisarPostsNoFeed(queryPostAtual, true);
+            } else {
+                carregarFeedPrincipal(true);
+            }
+        });
+
+        fabAdicionarPost.setOnClickListener(v -> {
+            if (!VisitanteHelper.verificarAcesso(getContext())) return;
+            Intent intent = new Intent(getActivity(), AdicionarHubActivity.class);
+            intent.putExtra("TIPO_CRIACAO", "POSTAGEM");
+            startActivity(intent);
+        });
+    }
+
+    private void inicializarComponentes(View view) {
         recyclerPostagem = view.findViewById(R.id.recyclerPostagem);
+        recyclerPesquisa = view.findViewById(R.id.recyclerPesquisa);
         textFeedVazio = view.findViewById(R.id.textFeedVazio);
         fabAdicionarPost = view.findViewById(R.id.fabAdicionarPost);
         swipeRefreshFeed = view.findViewById(R.id.swipeRefreshFeed);
+        toolbar = view.findViewById(R.id.materialToolbar);
 
-        recyclerPostagem = view.findViewById(R.id.recyclerPostagem);
-        recyclerPesquisa = view.findViewById(R.id.recyclerPesquisa);
-        MaterialToolbar toolbar = view.findViewById(R.id.materialToolbar);
+        feedUseCase = new FeedUseCase();
+        pesquisaUsuarioUseCase = new PesquisaUsuarioUseCase();
+        pesquisaPostagemUseCase = new PesquisaPostagemUseCase();
+        usuarioRepository = new UsuarioRepository();
+    }
 
-        pesquisaUseCase = new PesquisaUsuarioUseCase();
-
-        // Configurando a lista de pesquisa
+    private void configurarRecyclerViews() {
         recyclerPesquisa.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerPesquisa.setHasFixedSize(true);
 
-        // Injetando o menu de pesquisa na Toolbar
+        recyclerPostagem.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerPostagem.setHasFixedSize(true);
+        recyclerPostagem.setItemViewCacheSize(20);
+        adapterFeed = new PostagemAdapter(listaPostagens, false);
+        recyclerPostagem.setAdapter(adapterFeed);
+    }
+
+    private void configurarToolbarEMenus() {
         toolbar.inflateMenu(R.menu.menu_postagens);
-        MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_pesquisar);
-        searchView = (androidx.appcompat.widget.SearchView) searchItem.getActionView();
 
-        // Aplicar a cor dinâmica (colorTextPrimary) aos ícones do menu
-        android.graphics.drawable.Drawable searchDrawable = toolbar.getMenu().findItem(R.id.action_pesquisar).getIcon();
-        if (searchDrawable != null) {
-            searchDrawable.mutate();
-            searchDrawable.setTint(getResources().getColor(R.color.colorTextPrimary, getContext().getTheme()));
-        }
-
-        android.graphics.drawable.Drawable chatDrawable = toolbar.getMenu().findItem(R.id.action_chat).getIcon();
-        if (chatDrawable != null) {
-            chatDrawable.mutate();
-            chatDrawable.setTint(getResources().getColor(R.color.colorTextPrimary, getContext().getTheme()));
-        }
-
-        // Escutando a digitação em tempo real
-        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
+        for (int i = 0; i < toolbar.getMenu().size(); i++) {
+            android.graphics.drawable.Drawable icon = toolbar.getMenu().getItem(i).getIcon();
+            if (icon != null) {
+                icon.mutate();
+                icon.setTint(getResources().getColor(R.color.branco, getContext().getTheme()));
             }
+        }
+
+        MenuItem itemPesquisaUsuario = toolbar.getMenu().findItem(R.id.action_pesquisar_usuario);
+        MenuItem itemPesquisaPost = toolbar.getMenu().findItem(R.id.action_pesquisar_post);
+        MenuItem itemChat = toolbar.getMenu().findItem(R.id.action_chat);
+
+        androidx.appcompat.widget.SearchView searchViewUsuario = (androidx.appcompat.widget.SearchView) itemPesquisaUsuario.getActionView();
+        androidx.appcompat.widget.SearchView searchViewPost = (androidx.appcompat.widget.SearchView) itemPesquisaPost.getActionView();
+
+        // LÓGICA DA LUPA 1 (USUÁRIOS)
+        searchViewUsuario.setQueryHint("Nome ou @username...");
+        searchViewUsuario.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) { return false; }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                pesquisaUseCase.executarBusca(newText, new UsuarioRepository.OnBuscaUsuariosListener() {
+                if (newText == null || newText.trim().isEmpty()) {
+                    restaurarViewNormal();
+                    return true;
+                }
+
+                // Guardamos exatamente o que você digitou nesse milissegundo
+                final String pesquisaAtual = newText;
+
+                pesquisaUsuarioUseCase.executarBusca(pesquisaAtual, new UsuarioRepository.OnBuscaUsuariosListener() {
                     @Override
-                    public void onSuccess(List<Map<String, String>> usuariosEncontrados) {
-                        if (usuariosEncontrados == null) {
-                            // Se o texto for vazio/curto, esconde a pesquisa e volta o feed
-                            recyclerPesquisa.setVisibility(View.GONE);
-                            swipeRefreshFeed.setVisibility(View.VISIBLE);
-                            fabAdicionarPost.setVisibility(View.VISIBLE);
+                    public void onSuccess(List < Map < String , String > > usuarios) {
+                        // Verifica o que está escrito AGORA na lupa
+                        String textoNaLupa = searchViewUsuario.getQuery().toString();
+
+                        // Se você já apagou o texto ou continuou digitando outra coisa, ignora esse resultado atrasado!
+                        if (textoNaLupa.trim().isEmpty() || !textoNaLupa.equals(pesquisaAtual)) {
+                            return;
+                        }
+
+                        if (usuarios == null || usuarios.isEmpty()) {
+                            restaurarViewNormal();
                         } else {
-                            // achou usuários, esconde o feed e mostra os resultados
                             swipeRefreshFeed.setVisibility(View.GONE);
+                            recyclerPostagem.setVisibility(View.GONE);
                             fabAdicionarPost.setVisibility(View.GONE);
                             recyclerPesquisa.setVisibility(View.VISIBLE);
-
-                            recyclerPesquisa.setAdapter(new PesquisaUsuarioAdapter(usuariosEncontrados, getContext()));
+                            recyclerPesquisa.setAdapter(new PesquisaUsuarioAdapter(usuarios, getContext()));
                         }
                     }
 
                     @Override
-                    public void onError(String erro) {
-                        Toast.makeText(getContext(), "Erro na busca: " + erro, Toast.LENGTH_SHORT).show();
-                    }
+                    public void onError(String erro) {}
                 });
                 return true;
             }
         });
 
-        // Quando o usuário fechar a lupa, garantir que o feed volte ao normal
-        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+        itemPesquisaUsuario.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
-            public boolean onMenuItemActionExpand(MenuItem item) { return true; }
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                // Apenas fecha a outra lupa, sem causar o "pisque" no feed.
+                if (itemPesquisaPost.isActionViewExpanded()) {
+                    itemPesquisaPost.collapseActionView();
+                }
+                return true;
+            }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                recyclerPesquisa.setVisibility(View.GONE);
-                swipeRefreshFeed.setVisibility(View.VISIBLE);
-                fabAdicionarPost.setVisibility(View.VISIBLE);
+                restaurarViewNormal();
                 return true;
             }
         });
 
-        // Botão do Chat na Toolbar
-        MenuItem chatItem = toolbar.getMenu().findItem(R.id.action_chat);
-        if (chatItem != null) {
-            chatItem.setOnMenuItemClickListener(item -> {
-                if (!VisitanteHelper.verificarAcesso(getContext())) return false;
+        // LÓGICA DA LUPA 2 (FILTRAR POSTS)
+        searchViewPost.setQueryHint("Filtrar posts (ex: adoção)");
+        searchViewPost.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query != null && !query.isEmpty()) {
+                    restaurarViewNormal();
+                    isModoPesquisaPost = true;
+                    queryPostAtual = query;
 
+                    if (swipeRefreshFeed != null) swipeRefreshFeed.setRefreshing(true);
+                    pesquisarPostsNoFeed(query, true);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) { return false; }
+        });
+
+        itemPesquisaPost.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                // Apenas fecha a outra lupa, sem causar o "pisque" no feed.
+                if (itemPesquisaUsuario.isActionViewExpanded()) {
+                    itemPesquisaUsuario.collapseActionView();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                isModoPesquisaPost = false;
+                queryPostAtual = "";
+                carregarFeedPrincipal(true);
+                return true;
+            }
+        });
+
+        // ABRIR CHAT
+        if (itemChat != null) {
+            itemChat.setOnMenuItemClickListener(item -> {
+                if (!VisitanteHelper.verificarAcesso(getContext())) return false;
                 Intent intent = new Intent(getActivity(), com.ifam.amigopetfixo.activity.ChatHubActivity.class);
-                intent.putExtra("Acao", "ListaChats"); // Abre a caixa de entrada
+                intent.putExtra("Acao", "ListaChats");
                 startActivity(intent);
                 return true;
             });
         }
-
-        usuarioRepository = new UsuarioRepository();
-
-        recyclerPostagem.setHasFixedSize(true);
-        recyclerPostagem.setItemViewCacheSize(20);
-        recyclerPostagem.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        adapter = new PostagemAdapter(postagens);
-        recyclerPostagem.setAdapter(adapter);
-
-        fabAdicionarPost.setOnClickListener(v -> {
-            if (!VisitanteHelper.verificarAcesso(getContext())) return;
-
-            Intent intent = new Intent(getActivity(), AdicionarHubActivity.class);
-            intent.putExtra("TIPO_CRIACAO", "POSTAGEM");
-            startActivity(intent);
-        });
-
-        carregarPostagens();
-
-        swipeRefreshFeed.setOnRefreshListener(() -> {
-            carregarPostagens();
-        });
     }
 
-    private void carregarPostagens() {
-        postagensRef.addValueEventListener(new ValueEventListener() {
+    private void restaurarViewNormal() {
+        recyclerPesquisa.setVisibility(View.GONE);
+        swipeRefreshFeed.setVisibility(View.VISIBLE);
+        recyclerPostagem.setVisibility(View.VISIBLE);
+        fabAdicionarPost.setVisibility(View.VISIBLE);
+    }
+
+    // MÉTODOS DE DADOS E PAGINAÇÃO
+
+    private void configurarScrollInfinito() {
+        recyclerPostagem.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                postagens.clear();
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) { // Rolando para baixo
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    if (layoutManager != null && layoutManager.findLastVisibleItemPosition() >= listaPostagens.size() - 5) {
 
-                if (dataSnapshot.exists()) {
-                    textFeedVazio.setVisibility(View.GONE);
-                    recyclerPostagem.setVisibility(View.VISIBLE);
-
-                    for (DataSnapshot s : dataSnapshot.getChildren()) {
-                        Postagem p = s.getValue(Postagem.class);
-                        if (p != null) {
-                            postagens.add(0, p);
+                        if (isModoPesquisaPost) {
+                            if (!pesquisaPostagemUseCase.isLoading()) pesquisarPostsNoFeed(queryPostAtual, false);
+                        } else {
+                            if (!feedUseCase.isLoading()) carregarFeedPrincipal(false);
                         }
                     }
-
-                    adapter.notifyDataSetChanged();
-
-                    atualizarDadosDeAutores();
-
-                } else {
-                    textFeedVazio.setVisibility(View.VISIBLE);
-                    recyclerPostagem.setVisibility(View.GONE);
-                    adapter.notifyDataSetChanged();
-                }
-
-                if (swipeRefreshFeed != null && swipeRefreshFeed.isRefreshing()) {
-                    swipeRefreshFeed.setRefreshing(false);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                if (swipeRefreshFeed != null && swipeRefreshFeed.isRefreshing()) {
-                    swipeRefreshFeed.setRefreshing(false);
-                }
-                if (getContext() != null) {
                 }
             }
         });
     }
 
-    private void atualizarDadosDeAutores() {
-        for (int i = 0; i < postagens.size(); i++) {
-            final Postagem postagemAtual = postagens.get(i);
+    private void carregarFeedPrincipal(boolean isRefresh) {
+        feedUseCase.carregarFeed(isRefresh, new FeedUseCase.OnFeedLoadListener() {
+            @Override
+            public void onSuccess(List<Postagem> postagensCarregadas, boolean foiRefresh) {
+                processarResultadoLista(postagensCarregadas, foiRefresh);
+            }
+            @Override
+            public void onError(String erro) {
+                pararLoading();
+            }
+        });
+    }
+
+    private void pesquisarPostsNoFeed(String query, boolean isRefresh) {
+        pesquisaPostagemUseCase.pesquisarFeed(query, isRefresh, new FeedUseCase.OnFeedLoadListener() {
+            @Override
+            public void onSuccess(List<Postagem> postagensCarregadas, boolean foiRefresh) {
+                processarResultadoLista(postagensCarregadas, foiRefresh);
+            }
+            @Override
+            public void onError(String erro) {
+                pararLoading();
+                Toast.makeText(getContext(), "Nenhum post encontrado para esta palavra.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void processarResultadoLista(List<Postagem> postagensNovas, boolean isRefresh) {
+        pararLoading();
+
+        if (isRefresh) {
+            listaPostagens.clear();
+        }
+
+        int startPos = listaPostagens.size();
+        listaPostagens.addAll(postagensNovas);
+
+        if (isRefresh) {
+            adapterFeed.notifyDataSetChanged();
+        } else {
+            adapterFeed.notifyItemRangeInserted(startPos, postagensNovas.size());
+        }
+
+        textFeedVazio.setVisibility(listaPostagens.isEmpty() ? View.VISIBLE : View.GONE);
+        recyclerPostagem.setVisibility(listaPostagens.isEmpty() ? View.GONE : View.VISIBLE);
+
+        atualizarDadosDeAutores(startPos, postagensNovas.size());
+    }
+
+    private void pararLoading() {
+        if (swipeRefreshFeed != null && swipeRefreshFeed.isRefreshing()) {
+            swipeRefreshFeed.setRefreshing(false);
+        }
+    }
+
+    private void atualizarDadosDeAutores(int startIndex, int count) {
+        for (int i = startIndex; i < startIndex + count; i++) {
+            if (i >= listaPostagens.size()) break;
+
+            final Postagem postagemAtual = listaPostagens.get(i);
             final int posicao = i;
 
             usuarioRepository.buscarPerfilParaCabecalho(postagemAtual.getIdUsuario(), new UsuarioRepository.OnPerfilLoadedListener() {
                 @Override
                 public void onSuccess(String username, String fotoUrl) {
-
                     postagemAtual.setUsername(username);
                     postagemAtual.setNomeUsuario(username);
-
-                    adapter.notifyItemChanged(posicao);
+                    adapterFeed.notifyItemChanged(posicao);
                 }
-
                 @Override
-                public void onError(String erro) {
-
-                }
+                public void onError(String erro) {}
             });
         }
     }

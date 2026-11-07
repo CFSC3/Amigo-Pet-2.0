@@ -2,21 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Ícone de Pesquisa (A Lupa) -->
+    <!-- Lupa 2: Busca de Feed/Postagens (Nova) -->
     <item
-        android:id="@+id/action_pesquisar"
-        android:title="Pesquisar Username"
+        android:id="@+id/action_pesquisar_post"
         android:icon="@drawable/ic_search"
-        android:iconTint="@color/colorTextPrimary"
-        app:showAsAction="always|collapseActionView"
+        android:title="Filtrar Posts"
+        app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
-    <!-- Ícone do Chat (A Caixa de Entrada) -->
+    <!-- Lupa 1: Busca de Usuários (Perfís) -->
+    <item
+        android:id="@+id/action_pesquisar_usuario"
+        android:icon="@drawable/icon_search_person"
+        android:title="Buscar Usuários"
+        app:showAsAction="collapseActionView|ifRoom"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
+    <!-- Chat -->
     <item
         android:id="@+id/action_chat"
-        android:title="Mensagens"
         android:icon="@drawable/ic_chat"
-        android:iconTint="@color/colorTextPrimary"
+        android:title="Chat"
         app:showAsAction="ifRoom" />
-
 </menu>

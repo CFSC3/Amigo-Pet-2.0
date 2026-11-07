@@ -21,6 +21,7 @@ import com.ifam.amigopetfixo.adapter.ChatRecenteAdapter;
 import com.ifam.amigopetfixo.repository.ChatRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 public class ListaChatsFragment extends Fragment {
 
@@ -64,6 +65,10 @@ public class ListaChatsFragment extends Fragment {
                         listaChats.add(chat);
                     }
                 }
+
+                // Organiza do maior timestamp (mais novo) para o menor
+                Collections.sort(listaChats, (c1, c2) -> Long.compare(c2.getTimestamp(), c1.getTimestamp()));
+
                 adapter.notifyDataSetChanged();
             }
 

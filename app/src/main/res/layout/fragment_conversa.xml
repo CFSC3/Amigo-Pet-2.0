@@ -5,58 +5,127 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
+    <!-- Fundo de tela do Chat -->
+    <ImageView
+        android:id="@+id/imageFundoChat"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerMensagens"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:padding="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/layoutEntradaMensagem"
+        app:layout_constraintBottom_toTopOf="@+id/layoutApoioEntrada"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Container agrupando Resposta + Caixa de Texto -->
     <LinearLayout
-        android:id="@+id/layoutEntradaMensagem"
+        android:id="@+id/layoutApoioEntrada"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorSurface"
-        android:elevation="8dp"
-        android:gravity="bottom"
-        android:orientation="horizontal"
-        android:padding="8dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnAnexarMidia"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_camera"
-            app:tint="@color/colorTeal" />
-
-        <EditText
-            android:id="@+id/editMensagem"
-            android:layout_width="0dp"
+        <!-- Barra de Citação (Invisível por padrão) -->
+        <LinearLayout
+            android:id="@+id/layoutCitacao"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:hint="Digite uma mensagem..."
-            android:maxLines="4"
-            android:minHeight="48dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:textColor="@color/colorTextPrimary" />
+            android:background="#1AFFFFFF"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:visibility="gone">
 
-        <ImageButton
-            android:id="@+id/btnEnviarMensagem"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/bg_circle_primary"
-            android:src="@android:drawable/ic_menu_send"
-            app:tint="@color/branco" />
+            <View
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textCitacaoAutor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textCitacaoConteudo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnFecharCitacao"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/colorTextPrimary" />
+        </LinearLayout>
+
+        <!-- Caixa de Texto Original -->
+        <LinearLayout
+            android:id="@+id/layoutEntradaMensagem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorSurface"
+            android:elevation="8dp"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <ImageButton
+                android:id="@+id/btnAnexarMidia"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_camera"
+                app:tint="@color/colorTeal" />
+
+            <EditText
+                android:id="@+id/editMensagem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Digite uma mensagem..."
+                android:maxLines="4"
+                android:minHeight="48dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textColor="@color/colorTextPrimary" />
+
+            <ImageButton
+                android:id="@+id/btnEnviarMensagem"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_circle_primary"
+                android:src="@android:drawable/ic_menu_send"
+                app:tint="@color/branco" />
+        </LinearLayout>
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

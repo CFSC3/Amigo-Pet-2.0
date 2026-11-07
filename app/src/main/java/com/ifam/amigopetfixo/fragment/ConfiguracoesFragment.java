@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.auth.FirebaseAuth;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.activity.ConfiguracoesHubActivity;
 import com.ifam.amigopetfixo.activity.MainActivity;
@@ -24,7 +23,7 @@ import com.ifam.amigopetfixo.repository.UsuarioRepository;
 
 public class ConfiguracoesFragment extends Fragment {
 
-    private MaterialButton btnTrocarSenha, btnSobre, btnTermos, btnPrivacidade, btnSair, btnExcluir;
+    private MaterialButton btnTrocarSenha, btnAparencia, btnSobre, btnTermos, btnPrivacidade, btnSair, btnExcluir;
     private UsuarioRepository usuarioRepository;
 
     public ConfiguracoesFragment() {}
@@ -37,6 +36,7 @@ public class ConfiguracoesFragment extends Fragment {
         usuarioRepository = new UsuarioRepository();
 
         btnTrocarSenha = view.findViewById(R.id.btnTrocarSenhaConfig);
+        btnAparencia = view.findViewById(R.id.btnAparenciaConfig); // Novo Botão
         btnSobre = view.findViewById(R.id.btnSobreConfig);
         btnTermos = view.findViewById(R.id.btnTermosConfig);
         btnPrivacidade = view.findViewById(R.id.btnPrivacidadeConfig);
@@ -55,6 +55,8 @@ public class ConfiguracoesFragment extends Fragment {
                 exibirDialogoTrocaSenha();
             }
         });
+
+        btnAparencia.setOnClickListener(v -> abrirFragmentoComum(new AparenciaFragment(), "Aparência e temas"));
 
         btnSobre.setOnClickListener(v -> abrirFragmentoInfo("sobre", "Sobre o App"));
         btnTermos.setOnClickListener(v -> abrirFragmentoInfo("termos", "Termos e Condições"));
@@ -75,9 +77,12 @@ public class ConfiguracoesFragment extends Fragment {
         Bundle args = new Bundle();
         args.putString("tipoTela", tipo);
         infoFragment.setArguments(args);
+        abrirFragmentoComum(infoFragment, titulo);
+    }
 
+    private void abrirFragmentoComum(Fragment fragment, String titulo) {
         if (getActivity() instanceof ConfiguracoesHubActivity) {
-            ((ConfiguracoesHubActivity) getActivity()).carregarFragment(infoFragment, titulo);
+            ((ConfiguracoesHubActivity) getActivity()).carregarFragment(fragment, titulo);
         }
     }
 

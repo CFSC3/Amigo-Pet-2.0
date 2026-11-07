@@ -107,6 +107,7 @@
             android:id="@+id/editLegendaPostagem"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:maxLength="360"
             android:gravity="top|start"
             android:inputType="textMultiLine" />
     </com.google.android.material.textfield.TextInputLayout>

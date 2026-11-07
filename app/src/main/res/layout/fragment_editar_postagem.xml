@@ -106,6 +106,7 @@
                 android:layout_height="wrap_content"
                 android:minLines="5"
                 android:gravity="top|start"
+                android:maxLength="360"
                 android:hint="Escreva sua legenda..."
                 android:background="@null"
                 android:textColor="@color/colorTextPrimary"

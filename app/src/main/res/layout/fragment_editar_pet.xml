@@ -49,6 +49,7 @@
                     android:id="@+id/editNomePetEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="20"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -98,6 +99,7 @@
                     android:id="@+id/editRacaEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="20"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -114,6 +116,7 @@
                     android:id="@+id/editCorEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="10"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 

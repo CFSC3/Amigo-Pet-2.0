@@ -10,7 +10,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
+
+import android.app.NotificationManager;
+import android.content.Context;
+import com.ifam.amigopetfixo.helper.AppStatus;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -52,7 +58,8 @@ public class DetalhePostagemThreadFragment extends Fragment {
     private ShapeableImageView imgAvatarAutor;
     private TextView txtNomeAutor, txtUsernameAutor, txtTextoPostagem, txtNumeroCurtidas, txtNumeroComentarios;
     private ImageView imgMidiaPostagem, iconePlayVideo, iconeCoracao;
-    private VideoView videoMidiaPostagem;
+    private StyledPlayerView videoMidiaPostagem;
+    private ExoPlayer exoPlayer;
 
     // Ações da Thread
     private ImageButton btnEditarPostagem, btnExcluirPostagem;
@@ -155,21 +162,48 @@ public class DetalhePostagemThreadFragment extends Fragment {
                         carregarAutorPostagem(postagem.getIdUsuario());
                         configurarCurtidasEComentariosContador();
 
-                        if ("video".equals(postagem.getTipoMidia())) {
-                            iconePlayVideo.setVisibility(View.VISIBLE);
-                            imgMidiaPostagem.setOnClickListener(v -> {
-                                imgMidiaPostagem.setVisibility(View.GONE);
-                                iconePlayVideo.setVisibility(View.GONE);
-                                videoMidiaPostagem.setVisibility(View.VISIBLE);
-                                android.widget.MediaController mediaController = new android.widget.MediaController(getContext());
-                                mediaController.setAnchorView(videoMidiaPostagem);
-                                videoMidiaPostagem.setMediaController(mediaController);
-                                videoMidiaPostagem.setVideoURI(android.net.Uri.parse(postagem.getUrlMidia()));
-                                videoMidiaPostagem.start();
-                            });
-                        } else {
+                        View cardMidia = getView() != null ? getView().findViewById(R.id.cardMidia) : null;
+
+                        if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
+                            // É texto puro: esconde todo o container de mídia
+                            if (cardMidia != null) cardMidia.setVisibility(View.GONE);
+                            imgMidiaPostagem.setVisibility(View.GONE);
                             iconePlayVideo.setVisibility(View.GONE);
+                            videoMidiaPostagem.setVisibility(View.GONE);
                             imgMidiaPostagem.setOnClickListener(null);
+                        } else {
+                            // garante que o container está visível
+                            if (cardMidia != null) cardMidia.setVisibility(View.VISIBLE);
+
+                            if ("video".equals(postagem.getTipoMidia())) {
+                                iconePlayVideo.setVisibility(View.VISIBLE);
+                                imgMidiaPostagem.setOnClickListener(v -> {
+                                    imgMidiaPostagem.setVisibility(View.GONE);
+                                    iconePlayVideo.setVisibility(View.GONE);
+                                    videoMidiaPostagem.setVisibility(View.VISIBLE);
+
+                                    if (exoPlayer != null) {
+                                        exoPlayer.release();
+                                    }
+                                    exoPlayer = new ExoPlayer.Builder(getContext()).build();
+                                    videoMidiaPostagem.setPlayer(exoPlayer);
+                                    exoPlayer.setMediaItem(MediaItem.fromUri(postagem.getUrlMidia()));
+                                    exoPlayer.prepare();
+                                    exoPlayer.play();
+                                });
+                            } else {
+                                iconePlayVideo.setVisibility(View.GONE);
+                                imgMidiaPostagem.setOnClickListener(v -> {
+                                    if (getContext() != null) {
+                                        android.app.Dialog dialog = new android.app.Dialog(getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+                                        dialog.setContentView(R.layout.dialog_imagem_expandida);
+                                        android.widget.ImageView imgExpandida = dialog.findViewById(R.id.imgExpandida);
+                                        com.bumptech.glide.Glide.with(getContext()).load(postagem.getUrlMidia()).into(imgExpandida);
+                                        imgExpandida.setOnClickListener(view -> dialog.dismiss());
+                                        dialog.show();
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -350,6 +384,15 @@ public class DetalhePostagemThreadFragment extends Fragment {
                 ((androidx.appcompat.app.AppCompatActivity) getActivity()).getSupportActionBar().hide();
             }
         } catch (Exception e) {}
+
+        // Avisa que abriu os comentários
+        AppStatus.idPostagemAberta = idPostagemSelecionada; // Use a variável que guarda o ID da postagem
+
+        // Limpa as notificações dessa postagem
+        if (getContext() != null && idPostagemSelecionada != null) {
+            NotificationManager manager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.cancel(idPostagemSelecionada.hashCode());
+        }
     }
 
     @Override
@@ -360,5 +403,20 @@ public class DetalhePostagemThreadFragment extends Fragment {
                 ((androidx.appcompat.app.AppCompatActivity) getActivity()).getSupportActionBar().show();
             }
         } catch (Exception e) {}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        AppStatus.idPostagemAberta = null;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (exoPlayer != null) {
+            exoPlayer.release();
+            exoPlayer = null;
+        }
     }
 }

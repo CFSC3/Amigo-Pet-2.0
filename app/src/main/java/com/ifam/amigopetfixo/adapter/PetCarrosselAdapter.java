@@ -5,10 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -16,7 +14,6 @@ import com.ifam.amigopetfixo.Model.bean.Perfil_pet;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.activity.UsuarioHubActivity;
 import com.ifam.amigopetfixo.activity.VisualizacaoHubActivity;
-
 import java.util.List;
 
 public class PetCarrosselAdapter extends RecyclerView.Adapter<PetCarrosselAdapter.PetViewHolder> {
@@ -29,6 +26,11 @@ public class PetCarrosselAdapter extends RecyclerView.Adapter<PetCarrosselAdapte
         this.usuarioId = usuarioId;
     }
 
+    private boolean isProprietario() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        return currentUser != null && currentUser.getUid().equals(usuarioId);
+    }
+
     @NonNull
     @Override
     public PetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,13 +40,34 @@ public class PetCarrosselAdapter extends RecyclerView.Adapter<PetCarrosselAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PetViewHolder holder, int position) {
-        Perfil_pet pet = listaPets.get(position);
+        boolean dono = isProprietario();
+
+        if (dono && position == 0) {
+            holder.textNomePet.setText("Adicionar");
+
+            holder.imgPet.setImageResource(R.drawable.ic_add_pet_suave);
+
+            holder.imgPet.setBackgroundResource(android.R.color.transparent);
+
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), UsuarioHubActivity.class);
+                intent.putExtra("Acao", "AdicionarPet");
+                v.getContext().startActivity(intent);
+            });
+            return;
+        }
+
+        // Lógica normal para renderizar os pets
+        int posicaoReal = dono ? position - 1 : position;
+        Perfil_pet pet = listaPets.get(posicaoReal);
 
         if (pet.getNomePet() != null) {
             holder.textNomePet.setText(pet.getNomePet());
         }
 
         String urlFoto = pet.getUrlFotoPet();
+
+        holder.imgPet.setBackgroundResource(android.R.color.transparent);
 
         if (urlFoto != null && !urlFoto.isEmpty()) {
             Glide.with(holder.itemView.getContext())
@@ -56,10 +79,7 @@ public class PetCarrosselAdapter extends RecyclerView.Adapter<PetCarrosselAdapte
         }
 
         holder.itemView.setOnClickListener(v -> {
-            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-            String currentUserId = (currentUser != null) ? currentUser.getUid() : "";
-
-            if (usuarioId != null && usuarioId.equals(currentUserId)) {
+            if (dono) {
                 Intent intent = new Intent(v.getContext(), UsuarioHubActivity.class);
                 intent.putExtra("Acao", "VisualizarPet");
                 intent.putExtra("idPetSelecionado", pet.getIdPet());
@@ -76,7 +96,7 @@ public class PetCarrosselAdapter extends RecyclerView.Adapter<PetCarrosselAdapte
 
     @Override
     public int getItemCount() {
-        return listaPets.size();
+        return isProprietario() ? listaPets.size() + 1 : listaPets.size();
     }
 
     public static class PetViewHolder extends RecyclerView.ViewHolder {

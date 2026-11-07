@@ -34,6 +34,25 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="8dp"
+            android:text="Personalização"
+            android:textColor="#F6A800"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAparenciaConfig"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:text="Aparência e Temas"
+            android:textColor="@color/colorTextPrimary"
+            app:backgroundTint="@color/colorSurface"
+            app:cornerRadius="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
             android:text="Informações"
             android:textColor="#F6A800"
             android:textStyle="bold" />
@@ -75,27 +94,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="8dp"
-            android:text="Zona de Perigo"
-            android:textColor="#D32F2F"
+            android:text="Gerenciamento da Conta"
+            android:textColor="@color/colorTextPrimary"
             android:textStyle="bold" />
 
-        <!-- Botão de Exclusão: Mantido com fundo vermelho claro -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExcluirConfig"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:gravity="start|center_vertical"
             android:text="Excluir Conta Definitivamente"
-            android:textColor="#D32F2F"
-            app:backgroundTint="#FFEBEE"
+            android:textColor="@color/colorTextPrimary"
+            app:backgroundTint="@color/colorSurface"
             app:cornerRadius="8dp" />
 
-        <!-- Espaçamento extra para isolar o botão de Sair -->
         <Space
             android:layout_width="match_parent"
             android:layout_height="40dp" />
 
-        <!-- Botão de Sair: Centralizado, borda laranja e fundo branco -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSairConfig"
             android:layout_width="match_parent"

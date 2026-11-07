@@ -161,17 +161,26 @@ public class AdicionarPostagemFragment extends Fragment {
         novaPostagem.setTextoPostagem(legenda);
         novaPostagem.setUsername("teste");
 
+        // Garante que envia "texto" se não houver mídia escolhida
+        if (midiaUriSelecionada == null) {
+            tipoMidiaSelecionada = "texto";
+        }
+
         PostagemRepository repository = new PostagemRepository();
 
         repository.fazerUploadECriarPostagem(novaPostagem, midiaUriSelecionada, tipoMidiaSelecionada, new PostagemRepository.OnPostagemCompleteListener() {
             @Override
             public void onSuccess() {
-                requireActivity().finish();
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
             }
 
             @Override
             public void onFailure(String erro) {
-                Toast.makeText(getContext(), erro, Toast.LENGTH_LONG).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), erro, Toast.LENGTH_LONG).show();
+                }
                 btnPublicar.setEnabled(true);
                 btnPublicar.setText("Publicar");
                 btnCancelar.setEnabled(true);

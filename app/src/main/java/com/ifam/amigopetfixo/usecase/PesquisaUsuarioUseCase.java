@@ -1,8 +1,7 @@
 package com.ifam.amigopetfixo.usecase;
 
 import com.ifam.amigopetfixo.repository.UsuarioRepository;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 
 public class PesquisaUsuarioUseCase {
 
@@ -13,12 +12,11 @@ public class PesquisaUsuarioUseCase {
     }
 
     public void executarBusca(String textoDigitado, UsuarioRepository.OnBuscaUsuariosListener callbackTela) {
-        if (textoDigitado == null || textoDigitado.trim().length() < 2) {
-            callbackTela.onSuccess(null);
+        if (textoDigitado == null || textoDigitado.trim().isEmpty()) {
+            callbackTela.onSuccess(new ArrayList<>());
             return;
         }
 
-        String queryLimpa = textoDigitado.trim().replace("@", "");
-        repository.buscarUsuariosPorUsername(queryLimpa, callbackTela);
+        repository.buscarUsuariosMultiplos(textoDigitado, callbackTela);
     }
 }

@@ -6,7 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,9 +32,11 @@ import java.util.List;
 public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyViewHolder> {
 
     private List<Postagem> listapostagem;
+    private boolean isModoPerfil;
 
-    public PostagemAdapter(List<Postagem> p) {
+    public PostagemAdapter(List<Postagem> p, boolean isModoPerfil) {
         this.listapostagem = p;
+        this.isModoPerfil = isModoPerfil;
     }
 
     @NonNull
@@ -48,11 +52,18 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
         Postagem postagem = listapostagem.get(position);
 
         holder.txtTextoPostagem.setText(postagem.getTextoPostagem());
+        android.text.util.Linkify.addLinks(holder.txtTextoPostagem, android.text.util.Linkify.WEB_URLS);
 
         Glide.with(holder.itemView.getContext())
                 .load(postagem.getUrlMidia())
                 .centerCrop()
                 .into(holder.imgMidiaPostagem);
+
+        // Limpa player anterior se o card for reciclado (rolagem de tela)
+        if (holder.exoPlayer != null) {
+            holder.exoPlayer.release();
+            holder.exoPlayer = null;
+        }
 
         DatabaseReference usuarioRef = FirebaseDatabase.getInstance().getReference()
                 .child("banco-dados").child("usuario").child(postagem.getIdUsuario());
@@ -86,33 +97,57 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
             public void onCancelled(@NonNull DatabaseError error) { }
         });
 
-        if (holder.videoMidiaPostagem.isPlaying()) {
-            holder.videoMidiaPostagem.stopPlayback();
-        }
-        holder.videoMidiaPostagem.setVisibility(View.GONE);
-        holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
-
-        if ("video".equals(postagem.getTipoMidia())) {
-            holder.iconePlayVideo.setVisibility(View.VISIBLE);
-
-            holder.imgMidiaPostagem.setOnClickListener(v -> {
-                holder.imgMidiaPostagem.setVisibility(View.GONE);
-                holder.iconePlayVideo.setVisibility(View.GONE);
-                holder.videoMidiaPostagem.setVisibility(View.VISIBLE);
-
-                android.widget.MediaController mediaController = new android.widget.MediaController(v.getContext());
-                mediaController.setAnchorView(holder.videoMidiaPostagem);
-                holder.videoMidiaPostagem.setMediaController(mediaController);
-
-                holder.videoMidiaPostagem.setVideoURI(android.net.Uri.parse(postagem.getUrlMidia()));
-                holder.videoMidiaPostagem.start();
-            });
-        } else {
+        // Verifica se a postagem é pura de texto
+        if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
+            // Esconde o card da imagem inteiro
+            holder.itemView.findViewById(R.id.cardMidia).setVisibility(View.GONE);
+            holder.videoMidiaPostagem.setVisibility(View.GONE);
+            holder.imgMidiaPostagem.setVisibility(View.GONE);
             holder.iconePlayVideo.setVisibility(View.GONE);
             holder.imgMidiaPostagem.setOnClickListener(null);
+        } else {
+            // Mostra o card
+            holder.itemView.findViewById(R.id.cardMidia).setVisibility(View.VISIBLE);
+
+            if ("video".equals(postagem.getTipoMidia())) {
+                holder.videoMidiaPostagem.setVisibility(View.GONE);
+                holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
+                holder.iconePlayVideo.setVisibility(View.VISIBLE);
+
+                holder.imgMidiaPostagem.setOnClickListener(v -> {
+                    holder.imgMidiaPostagem.setVisibility(View.GONE);
+                    holder.iconePlayVideo.setVisibility(View.GONE);
+                    holder.videoMidiaPostagem.setVisibility(View.VISIBLE);
+
+                    // Cria o motor rápido e acopla ao visual do Card
+                    holder.exoPlayer = new ExoPlayer.Builder(v.getContext()).build();
+                    holder.videoMidiaPostagem.setPlayer(holder.exoPlayer);
+                    holder.exoPlayer.setMediaItem(MediaItem.fromUri(postagem.getUrlMidia()));
+                    holder.exoPlayer.prepare();
+                    holder.exoPlayer.play();
+                });
+            } else {
+                holder.videoMidiaPostagem.setVisibility(View.GONE);
+                holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
+                holder.iconePlayVideo.setVisibility(View.GONE);
+
+                // Lógica de expansão da imagem na tela preta
+                holder.imgMidiaPostagem.setOnClickListener(v -> {
+                    android.app.Dialog dialog = new android.app.Dialog(v.getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+                    dialog.setContentView(R.layout.dialog_imagem_expandida);
+
+                    android.widget.ImageView imgExpandida = dialog.findViewById(R.id.imgExpandida);
+
+                    com.bumptech.glide.Glide.with(v.getContext())
+                            .load(postagem.getUrlMidia())
+                            .into(imgExpandida);
+
+                    imgExpandida.setOnClickListener(view -> dialog.dismiss());
+                    dialog.show();
+                });
+            }
         }
 
-        // LÓGICA DE CURTIDAS (PATINHA)
         // Verifica se é visitante para evitar o NullPointerException
         boolean isVisitante = com.ifam.amigopetfixo.helper.VisitanteHelper.isVisitante();
         String currentUserId = isVisitante ? "" : FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -177,13 +212,39 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
             public void onCancelled(@NonNull DatabaseError error) { }
         });
 
-        holder.btnComentar.setOnClickListener(v -> {
-            if (!com.ifam.amigopetfixo.helper.VisitanteHelper.verificarAcesso(v.getContext())) return;
+        if (isModoPerfil) {
+            View.OnClickListener abrirThreadListener = v -> {
+                if (!com.ifam.amigopetfixo.helper.VisitanteHelper.verificarAcesso(v.getContext())) return;
 
-            ComentariosBottomSheet bottomSheet = new ComentariosBottomSheet(postagem.getIdPostagem());
-            bottomSheet.show(((androidx.fragment.app.FragmentActivity) v.getContext()).getSupportFragmentManager(), "ComentariosBottomSheet");
-        });
+                Intent intent;
+                if (postagem.getIdUsuario().equals(currentUserId)) {
+                    intent = new Intent(v.getContext(), com.ifam.amigopetfixo.activity.UsuarioHubActivity.class);
+                    intent.putExtra("Acao", "ThreadPostagem");
+                } else {
+                    intent = new Intent(v.getContext(), com.ifam.amigopetfixo.activity.VisualizacaoHubActivity.class);
+                    intent.putExtra("TIPO_VISUALIZACAO", "THREAD_POSTAGEM");
+                }
+                intent.putExtra("ID_ITEM", postagem.getIdPostagem());
+                v.getContext().startActivity(intent);
+            };
 
+            holder.itemView.setOnClickListener(abrirThreadListener);
+            holder.itemView.setClickable(true);
+            holder.itemView.setFocusable(true);
+            holder.btnComentar.setOnClickListener(abrirThreadListener);
+        } else {
+
+            holder.itemView.setOnClickListener(null);
+            holder.itemView.setClickable(false);
+            holder.itemView.setFocusable(false);
+
+            holder.btnComentar.setOnClickListener(v -> {
+                if (!com.ifam.amigopetfixo.helper.VisitanteHelper.verificarAcesso(v.getContext())) return;
+
+                ComentariosBottomSheet bottomSheet = new ComentariosBottomSheet(postagem.getIdPostagem());
+                bottomSheet.show(((androidx.fragment.app.FragmentActivity) v.getContext()).getSupportFragmentManager(), "ComentariosBottomSheet");
+            });
+        }
         View.OnClickListener listenerPerfil = v -> {
             if (!com.ifam.amigopetfixo.helper.VisitanteHelper.verificarAcesso(v.getContext())) return;
 
@@ -225,7 +286,8 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
         ImageView iconeCoracao;
         View btnCurtir;
         View btnComentar;
-        private VideoView videoMidiaPostagem;
+        StyledPlayerView videoMidiaPostagem;
+        ExoPlayer exoPlayer;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -49,14 +51,18 @@ public class EditarDoacaoFragment extends Fragment {
     private String nomeImagemAtual;
     private Uri imagemUriSelecionada;
     private Bitmap imagemBitmapCapturada;
+    private android.net.Uri imagemUriCamera;
 
     private DoacaoRepository repository;
 
-    private TextInputEditText editTitulo, editContato, editBairro, editEndereco, editDescricao;
+    private TextInputEditText editTitulo, editContato, editBairro, editCidade, editEndereco, editDescricao;
     private ChipGroup chipGroupCategoria;
     private ShapeableImageView imgMidiaEditar;
     private ImageButton btnVoltar;
     private MaterialButton btnSalvar;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private String cidadeDetectada = "";
 
     private final ActivityResultLauncher<Intent> galeriaLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -69,14 +75,13 @@ public class EditarDoacaoFragment extends Fragment {
             }
     );
 
-    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Bundle extras = result.getData().getExtras();
-                    imagemBitmapCapturada = (Bitmap) extras.get("data");
-                    imagemUriSelecionada = null; // Limpa a URI da galeria
-                    imgMidiaEditar.setImageBitmap(imagemBitmapCapturada);
+    private final ActivityResultLauncher<android.net.Uri> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            sucesso -> {
+                if (sucesso && imagemUriCamera != null) {
+                    imagemUriSelecionada = imagemUriCamera;
+                    imagemBitmapCapturada = null;
+                    imgMidiaEditar.setImageURI(imagemUriSelecionada);
                 }
             }
     );
@@ -111,12 +116,16 @@ public class EditarDoacaoFragment extends Fragment {
         editDescricao = view.findViewById(R.id.editDescricaoDoacao);
         chipGroupCategoria = view.findViewById(R.id.chipGroupCategoria);
         editEndereco = view.findViewById(R.id.editEnderecoDoacao);
+        editCidade = view.findViewById(R.id.editCidadeDoacao);
         editBairro = view.findViewById(R.id.editBairroDoacao);
         editContato = view.findViewById(R.id.editContatoDoacao);
 
         imgMidiaEditar = view.findViewById(R.id.imgMidiaEditarDoacao);
         btnVoltar = view.findViewById(R.id.btnVoltarEditarDoacao);
         btnSalvar = view.findViewById(R.id.btnSalvarEdicaoDoacao);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        obterEstadoSilenciosamente();
     }
 
     private void carregarDadosAtuais() {
@@ -130,6 +139,7 @@ public class EditarDoacaoFragment extends Fragment {
                         editTitulo.setText(adocao.getTitulo());
                         editDescricao.setText(adocao.getDescricao());
                         editEndereco.setText(adocao.getEndereco());
+                        editCidade.setText(adocao.getCidade());
                         editBairro.setText(adocao.getBairro());
                         editContato.setText(adocao.getContato());
                         nomeImagemAtual = adocao.getImagem();
@@ -181,24 +191,44 @@ public class EditarDoacaoFragment extends Fragment {
     }
 
     private void mostrarDialogoEscolhaImagem() {
-        String[] opcoes = {"Tirar Foto", "Escolher da Galeria"};
-        new AlertDialog.Builder(getContext())
-                .setTitle("Alterar Imagem")
-                .setItems(opcoes, (dialog, which) -> {
-                    if (which == 0) {
-                        // Câmera
-                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        cameraLauncher.launch(takePictureIntent);
-                    } else if (which == 1) {
-                        // Galeria
-                        Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        galeriaLauncher.launch(pickPhotoIntent);
-                    }
-                })
-                .show();
+        com.google.android.material.bottomsheet.BottomSheetDialog bottomSheetDialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(requireContext());
+
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.layout_bottomsheet_midia, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        bottomSheetView.findViewById(R.id.btnBottomCamera).setOnClickListener(viewCamera -> {
+            bottomSheetDialog.dismiss();
+
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.Images.Media.TITLE, "Foto_Doacao_Edit");
+            imagemUriCamera = requireContext().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            cameraLauncher.launch(imagemUriCamera);
+        });
+
+        bottomSheetView.findViewById(R.id.btnBottomGaleria).setOnClickListener(viewGaleria -> {
+            bottomSheetDialog.dismiss();
+
+            Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            galeriaLauncher.launch(pickPhotoIntent);
+        });
+
+        bottomSheetDialog.show();
     }
 
     private void salvarAlteracoes() {
+
+        String cidadeDigitada = editCidade.getText().toString().trim();
+
+        if (!cidadeDetectada.isEmpty() && !cidadeDigitada.equalsIgnoreCase(cidadeDetectada)) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Localização Incompatível")
+                    .setMessage("Opa! Você não se encontra nesta cidade. Para garantir a segurança, você só pode registrar/editar doações para a sua cidade atual (" + cidadeDetectada + ").")
+                    .setPositiveButton("Entendi", null)
+                    .show();
+            return;
+        }
+
         btnSalvar.setEnabled(false);
         btnSalvar.setText("Salvando...");
 
@@ -214,6 +244,7 @@ public class EditarDoacaoFragment extends Fragment {
         atualizacoes.put("descricao", editDescricao.getText().toString().trim());
         atualizacoes.put("categoria", categoriaSelecionada);
         atualizacoes.put("endereco", editEndereco.getText().toString().trim());
+        atualizacoes.put("cidade", editCidade.getText().toString().trim());
         atualizacoes.put("bairro", editBairro.getText().toString().trim());
         atualizacoes.put("contato", editContato.getText().toString().trim());
 
@@ -260,6 +291,24 @@ public class EditarDoacaoFragment extends Fragment {
         if (getContext() != null) Toast.makeText(getContext(), mensagemErro, Toast.LENGTH_SHORT).show();
         btnSalvar.setEnabled(true);
         btnSalvar.setText("Salvar");
+    }
+
+    private void obterEstadoSilenciosamente() {
+        try {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
+                if (location != null) {
+                    android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), new java.util.Locale("pt", "BR"));
+                    try {
+                        java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                        if (addresses != null && !addresses.isEmpty()) {
+                            String local = addresses.get(0).getSubAdminArea();
+                            if (local == null) local = addresses.get(0).getLocality();
+                            if (local != null) cidadeDetectada = local;
+                        }
+                    } catch (Exception e) { e.printStackTrace(); }
+                }
+            });
+        } catch (SecurityException e) {}
     }
 
     @Override

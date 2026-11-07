@@ -46,7 +46,7 @@ public class AdocoesAdapter extends RecyclerView.Adapter<AdocoesAdapter.MyViewHo
         Adocoes adocao = listaDoacoes.get(position);
 
         holder.titulo.setText(adocao.getTitulo());
-        holder.bairro.setText(adocao.getBairro());
+        holder.bairro.setText("📍 " + adocao.getBairro() + ", " + adocao.getCidade());
         holder.data.setText(adocao.getData_post());
         holder.categoria.setText(adocao.getCategoria() != null ? adocao.getCategoria() : "Geral");
 

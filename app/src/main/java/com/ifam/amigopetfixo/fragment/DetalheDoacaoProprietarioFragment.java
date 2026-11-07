@@ -32,9 +32,11 @@ public class DetalheDoacaoProprietarioFragment extends Fragment {
     private String currentUserId;
     private DoacaoRepository repository;
 
-    private TextView titulo, descricao, categoria, data, bairro, endereco, contato;
+    private TextView titulo, descricao, categoria, data, bairro, cidade, endereco, contato;
     private ImageView foto;
     private ImageButton btnVoltar, btnEditar, btnExcluir;
+
+    private String urlImagemCarregada = null;
 
     public DetalheDoacaoProprietarioFragment() {}
 
@@ -51,6 +53,7 @@ public class DetalheDoacaoProprietarioFragment extends Fragment {
 
         bairro = view.findViewById(R.id.textBairroVizualizarProprietario);
         endereco = view.findViewById(R.id.textEndrecoVizualizarProprietario);
+        cidade = view.findViewById(R.id.textCidadeVizualizarProprietario);
         contato = view.findViewById(R.id.textContatoVizualizarProprietario);
 
         inicializarViews(view);
@@ -84,6 +87,7 @@ public class DetalheDoacaoProprietarioFragment extends Fragment {
                     data.setText("Publicado em: " + snapshot.child("data_post").getValue(String.class));
                     nomeImagemAtual = snapshot.child("imagem").getValue(String.class);
                     bairro.setText("📍 Bairro: " + snapshot.child("bairro").getValue(String.class));
+                    cidade.setText("🏙️ Cidade: " + snapshot.child("cidade").getValue(String.class));
                     endereco.setText("🏠 Endereço: " + snapshot.child("endereco").getValue(String.class));
                     contato.setText("📱 Contato: " + snapshot.child("contato").getValue(String.class));
 
@@ -101,7 +105,13 @@ public class DetalheDoacaoProprietarioFragment extends Fragment {
                 .child("BancoImagens").child("DoacoesAdocoes").child(nomeImagem + ".png");
 
         imagemRef.getDownloadUrl().addOnSuccessListener(uri -> {
-            if (isAdded()) Glide.with(this).load(uri).centerCrop().into(foto);
+            if (isAdded()) {
+                urlImagemCarregada = uri.toString();
+
+                Glide.with(this).load(uri).centerCrop().into(foto);
+
+                foto.setOnClickListener(v -> expandirImagem());
+            }
         });
     }
 
@@ -138,6 +148,22 @@ public class DetalheDoacaoProprietarioFragment extends Fragment {
                 if(getContext() != null) Toast.makeText(getContext(), "Erro: " + erro, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void expandirImagem() {
+        if (urlImagemCarregada == null || getContext() == null) return;
+
+        android.app.Dialog dialog = new android.app.Dialog(getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.setContentView(R.layout.dialog_imagem_expandida);
+
+        android.widget.ImageView imgExpandida = dialog.findViewById(R.id.imgExpandida);
+
+        Glide.with(getContext())
+                .load(urlImagemCarregada)
+                .into(imgExpandida);
+
+        imgExpandida.setOnClickListener(view -> dialog.dismiss());
+        dialog.show();
     }
 
     @Override

@@ -114,6 +114,15 @@
                     android:layout_marginBottom="12dp"/>
 
                 <TextView
+                    android:id="@+id/textEndrecoVizualizar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🏠 Endereço: "
+                    android:textColor="@color/colorTextPrimary"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
                     android:id="@+id/textBairroVizualizar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -123,10 +132,10 @@
                     android:layout_marginBottom="8dp"/>
 
                 <TextView
-                    android:id="@+id/textEndrecoVizualizar"
+                    android:id="@+id/textCidadeVizualizar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="🏠 Endereço: "
+                    android:text="🏙️ Cidade: "
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp"/>

@@ -127,6 +127,20 @@ public class PostagemRepository {
                 .addOnFailureListener(e -> listener.onFailure("Erro ao atualizar: " + e.getMessage()));
     }
 
+    public void buscarPostagensPaginadas(int limite, String ultimoIdCarregado, com.google.firebase.database.ValueEventListener listener) {
+        com.google.firebase.database.Query query = rootRef.child("Postagens").orderByKey();
+
+        if (ultimoIdCarregado != null) {
+            // Firebase ordena cronologicamente pelo Push ID.
+            // endAt() pega do início até o ID especificado.
+            query = query.endAt(ultimoIdCarregado).limitToLast(limite);
+        } else {
+            query = query.limitToLast(limite);
+        }
+
+        query.addListenerForSingleValueEvent(listener);
+    }
+
     public interface OnPostagemCompleteListener {
         void onSuccess();
         void onFailure(String erro);

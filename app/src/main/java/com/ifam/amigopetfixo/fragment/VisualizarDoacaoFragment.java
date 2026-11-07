@@ -28,9 +28,10 @@ import com.ifam.amigopetfixo.R;
 public class VisualizarDoacaoFragment extends Fragment {
 
     private DatabaseReference usuariosRef;
-    private TextView titulo, descricao, categoria, endereco, bairro, contato, data;
+    private TextView titulo, descricao, categoria, endereco, cidade, bairro, contato, data;
     private ImageView foto;
     private FloatingActionButton fbWhatsapp;
+    private String urlImagemCarregada = null;
 
     private String numeroContatoFormatado = "";
 
@@ -50,6 +51,7 @@ public class VisualizarDoacaoFragment extends Fragment {
         descricao = view.findViewById(R.id.textDescricaoVizualizar);
         categoria = view.findViewById(R.id.textCategoriaVizualizar);
         endereco = view.findViewById(R.id.textEndrecoVizualizar);
+        cidade = view.findViewById(R.id.textCidadeVizualizar);
         bairro = view.findViewById(R.id.textBairroVizualizar);
         contato = view.findViewById(R.id.textContatoVizualizar);
         data = view.findViewById(R.id.textData);
@@ -77,12 +79,13 @@ public class VisualizarDoacaoFragment extends Fragment {
                     String descricaoStr = obterStringSegura(snapshot, "descricao");
                     String categoriaStr = obterStringSegura(snapshot, "categoria");
                     String enderecoStr = obterStringSegura(snapshot, "endereco");
+                    String cidadeStr = obterStringSegura(snapshot, "cidade");
                     String bairroStr = obterStringSegura(snapshot, "bairro");
                     String contatoStr = obterStringSegura(snapshot, "contato");
                     String imagemStr = obterStringSegura(snapshot, "imagem");
                     String dataStr = obterStringSegura(snapshot, "data_post");
 
-                    mostrarInformacoes(tituloStr, descricaoStr, categoriaStr, enderecoStr, bairroStr, contatoStr, imagemStr, dataStr);
+                    mostrarInformacoes(tituloStr, descricaoStr, categoriaStr, enderecoStr, cidadeStr, bairroStr, contatoStr, imagemStr, dataStr);
                 } else if (isAdded()) {
                     Toast.makeText(getContext(), "Esta publicação não existe mais.", Toast.LENGTH_SHORT).show();
                     requireActivity().finish();
@@ -105,12 +108,13 @@ public class VisualizarDoacaoFragment extends Fragment {
         return "Não informado";
     }
 
-    private void mostrarInformacoes(String tituloStr, String descricaoStr, String categoriaStr, String enderecoStr,
-                                    String bairroStr, String contatoStr, String imagemStr, String dataStr) {
+    private void mostrarInformacoes(String tituloStr, String descricaoStr, String categoriaStr, String enderecoStr, String cidadeStr
+                                    ,String bairroStr, String contatoStr, String imagemStr, String dataStr) {
         titulo.setText(tituloStr);
         descricao.setText(descricaoStr);
         categoria.setText(categoriaStr);
         endereco.setText("🏠 Endereço: " + enderecoStr);
+        cidade.setText("🏙️ Cidade: " + cidadeStr);
         bairro.setText("📍 Bairro: " + bairroStr);
         contato.setText("📱 Contato: " + contatoStr);
         data.setText("Publicado em: " + dataStr);
@@ -127,11 +131,15 @@ public class VisualizarDoacaoFragment extends Fragment {
 
         imagemRef.getDownloadUrl().addOnSuccessListener(uri -> {
             if (isAdded()) {
+                urlImagemCarregada = uri.toString();
+
                 Glide.with(this)
                         .load(uri)
                         .centerCrop()
                         .placeholder(R.drawable.padrao)
                         .into(foto);
+
+                foto.setOnClickListener(v -> expandirImagem());
             }
         }).addOnFailureListener(e -> {
             if (isAdded()) foto.setImageResource(R.drawable.padrao);
@@ -156,5 +164,21 @@ public class VisualizarDoacaoFragment extends Fragment {
                 Toast.makeText(getContext(), "Número de contato inválido.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void expandirImagem() {
+        if (urlImagemCarregada == null || getContext() == null) return;
+
+        android.app.Dialog dialog = new android.app.Dialog(getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        dialog.setContentView(R.layout.dialog_imagem_expandida);
+
+        android.widget.ImageView imgExpandida = dialog.findViewById(R.id.imgExpandida);
+
+        Glide.with(getContext())
+                .load(urlImagemCarregada)
+                .into(imgExpandida);
+
+        imgExpandida.setOnClickListener(view -> dialog.dismiss());
+        dialog.show();
     }
 }

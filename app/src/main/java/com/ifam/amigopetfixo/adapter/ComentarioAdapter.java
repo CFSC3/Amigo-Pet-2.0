@@ -1,21 +1,28 @@
 package com.ifam.amigopetfixo.adapter;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.ifam.amigopetfixo.Model.bean.Comentario;
 import com.ifam.amigopetfixo.R;
-import com.ifam.amigopetfixo.activity.UsuarioHubActivity;
-import com.ifam.amigopetfixo.activity.VisualizacaoHubActivity;
 import com.ifam.amigopetfixo.repository.UsuarioRepository;
+
 import java.util.List;
 
 public class ComentarioAdapter extends RecyclerView.Adapter<ComentarioAdapter.MyViewHolder> {
@@ -48,9 +55,10 @@ public class ComentarioAdapter extends RecyclerView.Adapter<ComentarioAdapter.My
         Comentario comentario = listaComentarios.get(position);
         holder.txtTextoComentario.setText(comentario.getTexto());
 
+        Linkify.addLinks(holder.txtTextoComentario, Linkify.WEB_URLS);
+
         String idAutor = comentario.getIdUsuario();
 
-        // Bloqueio de segurança no Adapter
         if (idAutor != null && !idAutor.isEmpty()) {
             usuarioRepository.buscarPerfilParaCabecalho(idAutor, new UsuarioRepository.OnPerfilLoadedListener() {
                 @Override
@@ -64,10 +72,10 @@ public class ComentarioAdapter extends RecyclerView.Adapter<ComentarioAdapter.My
                 public void onError(String erro) { }
             });
         } else {
-            // Fallback visual para comentários sem autor definido
             holder.txtUsernameComentario.setText("@Desconhecido");
         }
 
+        // Clique para ir ao perfil
         holder.itemView.setOnClickListener(v -> {
             Intent intent;
             if (comentario.getIdUsuario().equals(currentUserId)) {
@@ -81,24 +89,90 @@ public class ComentarioAdapter extends RecyclerView.Adapter<ComentarioAdapter.My
             v.getContext().startActivity(intent);
         });
 
-        holder.itemView.setOnLongClickListener(v -> {
-            if (comentario.getIdUsuario().equals(currentUserId)) {
-                PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
-                popupMenu.getMenu().add(0, 0, 0, "Editar");
-                popupMenu.getMenu().add(0, 1, 1, "Excluir");
-                popupMenu.setOnMenuItemClickListener(item -> {
-                    if (item.getItemId() == 0) {
-                        listener.onEditarClick(comentario);
-                    } else if (item.getItemId() == 1) {
-                        listener.onExcluirClick(comentario);
-                    }
-                    return true;
-                });
-                popupMenu.show();
-                return true;
-            }
-            return false;
+        View.OnLongClickListener longClickListener = v -> {
+            abrirMenuBottomSheet(v.getContext(), comentario);
+            return true;
+        };
+
+        holder.itemView.setOnLongClickListener(longClickListener);
+        holder.txtTextoComentario.setOnLongClickListener(longClickListener);
+    }
+
+    private void abrirMenuBottomSheet(Context context, Comentario comentario) {
+
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
+
+        // Criando o container principal
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(32, 48, 32, 48);
+
+        layout.setBackgroundResource(R.drawable.fundo_arredondado_bottomsheet);
+
+        boolean isDonoDoComentario = comentario.getIdUsuario().equals(currentUserId);
+
+        // COPIAR
+        TextView btnCopiar = criarBotaoMenu(context, "Copiar");
+        btnCopiar.setOnClickListener(v -> {
+            copiarTextoParaAreaDeTransferencia(context, comentario.getTexto());
+            bottomSheetDialog.dismiss();
         });
+        layout.addView(btnCopiar);
+
+        if (isDonoDoComentario) {
+            // EDITAR
+            TextView btnEditar = criarBotaoMenu(context, "Editar");
+            btnEditar.setOnClickListener(v -> {
+                listener.onEditarClick(comentario);
+                bottomSheetDialog.dismiss();
+            });
+            layout.addView(btnEditar);
+
+            // EXCLUIR
+            TextView btnExcluir = criarBotaoMenu(context, "Excluir");
+
+            btnExcluir.setOnClickListener(v -> {
+                listener.onExcluirClick(comentario);
+                bottomSheetDialog.dismiss();
+            });
+            layout.addView(btnExcluir);
+        }
+
+        bottomSheetDialog.setContentView(layout);
+        bottomSheetDialog.show();
+    }
+
+    private TextView criarBotaoMenu(Context context, String texto) {
+        TextView textView = new TextView(context);
+        textView.setText(texto);
+
+        textView.setTextSize(16f);
+        textView.setTypeface(null, android.graphics.Typeface.NORMAL);
+        textView.setTextColor(context.getResources().getColor(R.color.colorTextPrimary));
+
+        textView.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        textView.setPadding(48, 36, 48, 36);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        textView.setLayoutParams(params);
+
+        android.util.TypedValue outValue = new android.util.TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        textView.setBackgroundResource(outValue.resourceId);
+
+        return textView;
+    }
+
+    private void copiarTextoParaAreaDeTransferencia(Context context, String texto) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Comentário Amigo Pet", texto);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(context, "Comentário copiado!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

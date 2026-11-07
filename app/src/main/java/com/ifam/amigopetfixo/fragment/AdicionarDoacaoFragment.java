@@ -3,7 +3,7 @@ package com.ifam.amigopetfixo.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -29,12 +29,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.ifam.amigopetfixo.Model.bean.Adocoes;
 import com.ifam.amigopetfixo.R;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -45,33 +43,34 @@ public class AdicionarDoacaoFragment extends Fragment {
     private FirebaseAuth usuario = FirebaseAuth.getInstance();
     private DatabaseReference referencia = FirebaseDatabase.getInstance().getReference();
     private ImageView foto;
-    private TextInputEditText titulo, dscricao, endereco, bairro, contato;
+    private TextInputEditText titulo, dscricao, endereco, cidade, bairro, contato;
     private ChipGroup chipGroupCategoria;
     private MaterialButton cancelar, salvar;
     private Random random = new Random();
 
     private FusedLocationProviderClient fusedLocationClient;
-    private String estadoDetectado = "Amazonas";
+    private String estadoDetectado = "";
+    private String cidadeDetectada = "";
 
-    private final ActivityResultLauncher<Intent> cameraLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Bundle extras = result.getData().getExtras();
-                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-                    foto.setImageBitmap(imageBitmap);
+    private Uri imagemUriSelecionada;
+    private Bitmap imagemBitmapCapturada;
+    private Uri imagemUriCamera;
+
+    private final ActivityResultLauncher<android.net.Uri> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), sucesso -> {
+                if (sucesso && imagemUriCamera != null) {
+                    imagemUriSelecionada = imagemUriCamera;
+                    imagemBitmapCapturada = null;
+                    foto.setImageURI(imagemUriSelecionada);
                 }
             });
 
     private final ActivityResultLauncher<String> galeriaLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
-                    try {
-                        InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
-                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        foto.setImageBitmap(bitmap);
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Erro ao carregar imagem.", Toast.LENGTH_SHORT).show();
-                    }
+                    imagemUriSelecionada = uri;
+                    imagemBitmapCapturada = null;
+                    foto.setImageURI(uri);
                 }
             });
 
@@ -92,6 +91,7 @@ public class AdicionarDoacaoFragment extends Fragment {
         titulo = view.findViewById(R.id.editTextTitulo);
         dscricao = view.findViewById(R.id.editTextDescricao);
         endereco = view.findViewById(R.id.editTextEndereco);
+        cidade = view.findViewById(R.id.editTextCidade);
         bairro = view.findViewById(R.id.editTextBairro);
         contato = view.findViewById(R.id.editTextContato);
         chipGroupCategoria = view.findViewById(R.id.chipGroupCategoria);
@@ -106,8 +106,11 @@ public class AdicionarDoacaoFragment extends Fragment {
             if (opcao == 1) {
                 galeriaLauncher.launch("image/*");
             } else if (opcao == 2) {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraLauncher.launch(takePictureIntent);
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put(android.provider.MediaStore.Images.Media.TITLE, "Foto_Doacao");
+                imagemUriCamera = requireContext().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                cameraLauncher.launch(imagemUriCamera);
             }
         }
 
@@ -123,12 +126,19 @@ public class AdicionarDoacaoFragment extends Fragment {
                         java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                         if (addresses != null && !addresses.isEmpty()) {
                             estadoDetectado = addresses.get(0).getAdminArea();
+
+                            String local = addresses.get(0).getSubAdminArea();
+                            if (local == null) local = addresses.get(0).getLocality();
+
+                            if (local != null) {
+                                cidadeDetectada = local;
+                                cidade.setText(cidadeDetectada);
+                            }
                         }
                     } catch (Exception e) { e.printStackTrace(); }
                 }
             });
-        } catch (SecurityException e) {
-        }
+        } catch (SecurityException e) {}
     }
 
     private void configurarBotoes() {
@@ -138,6 +148,7 @@ public class AdicionarDoacaoFragment extends Fragment {
 
     private void salvarDoacao() {
         int chipSelecionadoId = chipGroupCategoria.getCheckedChipId();
+        String cidadeDigitada = cidade.getText().toString().trim();
 
         if (titulo.getText().toString().trim().isEmpty() ||
                 dscricao.getText().toString().trim().isEmpty() ||
@@ -150,6 +161,20 @@ public class AdicionarDoacaoFragment extends Fragment {
             return;
         }
 
+        // Validação Antifraude de Localização
+        if (!cidadeDetectada.isEmpty() && !cidadeDigitada.equalsIgnoreCase(cidadeDetectada)) {
+            new android.app.AlertDialog.Builder(getContext())
+                    .setTitle("Localização Incompatível")
+                    .setMessage("Opa! Você não se encontra nesta cidade. Para garantir a segurança das entregas, você só pode registrar doações na sua cidade atual (" + cidadeDetectada + ").")
+                    .setPositiveButton("Entendi", null)
+                    .show();
+            return;
+        }
+
+        salvar.setEnabled(false);
+        cancelar.setEnabled(false);
+        salvar.setText("Doando...");
+
         Chip chipSelecionado = getView().findViewById(chipSelecionadoId);
         String categoriaTexto = chipSelecionado.getText().toString();
 
@@ -161,6 +186,7 @@ public class AdicionarDoacaoFragment extends Fragment {
         adocoes.setTitulo(titulo.getText().toString());
         adocoes.setDescricao(dscricao.getText().toString());
         adocoes.setEndereco(endereco.getText().toString());
+        adocoes.setCidade(cidadeDigitada);
         adocoes.setBairro(bairro.getText().toString());
         adocoes.setCategoria(categoriaTexto);
         adocoes.setContato(contato.getText().toString());
@@ -171,39 +197,53 @@ public class AdicionarDoacaoFragment extends Fragment {
         DatabaseReference usuarios = referencia.child("banco-dados");
         DatabaseReference doacaoRef = usuarios.child("adocoesDoacoes").child(tituloKey);
 
-        doacaoRef.setValue(adocoes);
-        doacaoRef.child("imagem").setValue(idImagem);
-        doacaoRef.child("usuarioID").setValue(usuario.getUid());
-        doacaoRef.child("estado").setValue(estadoDetectado);
+        doacaoRef.setValue(adocoes).addOnSuccessListener(aVoid -> {
+            doacaoRef.child("imagem").setValue(idImagem);
+            doacaoRef.child("usuarioID").setValue(usuario.getUid());
+            doacaoRef.child("estado").setValue(estadoDetectado);
+            doacaoRef.child("cidade").setValue(cidadeDigitada);
+            usuarios.child("usuario").child(usuario.getUid()).child("adocoesDoacoes").child(tituloKey).setValue(true);
 
-        usuarios.child("usuario").child(usuario.getUid()).child("adocoesDoacoes").child(tituloKey).setValue(true);
-
-        salvarImagemStorage(idImagem);
-
+            salvarImagemStorage(idImagem);
+        }).addOnFailureListener(e -> {
+            salvar.setEnabled(true);
+            cancelar.setEnabled(true);
+            salvar.setText("Doar");
+            Toast.makeText(getContext(), "Erro de conexão.", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void salvarImagemStorage(String nomeImagem) {
-        foto.setDrawingCacheEnabled(true);
-        foto.buildDrawingCache();
-        Bitmap bitmap = foto.getDrawingCache();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 75, baos);
-        byte[] dadosImagem = baos.toByteArray();
-
         StorageReference imagemRef = FirebaseStorage.getInstance().getReference()
                 .child("BancoImagens").child("DoacoesAdocoes").child(nomeImagem + ".png");
 
-        UploadTask uploadTask = imagemRef.putBytes(dadosImagem);
+        if (imagemUriSelecionada != null) {
+            imagemRef.putFile(imagemUriSelecionada)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        if (isAdded()) requireActivity().onBackPressed();
+                    })
+                    .addOnFailureListener(e -> {
+                if (isAdded()) {
+                    salvar.setEnabled(true);
+                    cancelar.setEnabled(true);
+                    salvar.setText("Doar");
+                    Toast.makeText(getContext(), "Erro ao enviar imagem", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if (imagemBitmapCapturada != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            imagemBitmapCapturada.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] dadosImagem = baos.toByteArray();
 
-        uploadTask.addOnSuccessListener(taskSnapshot -> {
-            if (isAdded()) {
-                requireActivity().onBackPressed();
-            }
-        }).addOnFailureListener(e -> {
-            if (isAdded()) {
-                Toast.makeText(getContext(), "Erro ao enviar foto: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+            imagemRef.putBytes(dadosImagem)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        if (isAdded()) requireActivity().onBackPressed();
+                    })
+                    .addOnFailureListener(e -> {
+                        if (isAdded()) Toast.makeText(getContext(), "Erro ao enviar da câmera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            if (isAdded()) requireActivity().onBackPressed();
+        }
     }
 }

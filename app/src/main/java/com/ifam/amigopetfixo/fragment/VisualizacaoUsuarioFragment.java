@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +28,7 @@ import com.ifam.amigopetfixo.Model.bean.Postagem;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.adapter.FeedUsuarioAdapter;
 import com.ifam.amigopetfixo.adapter.PetCarrosselAdapter;
+import com.ifam.amigopetfixo.adapter.PostagemAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,10 @@ public class VisualizacaoUsuarioFragment extends Fragment {
 
     private FeedUsuarioAdapter feedAdapter;
     private List<Postagem> listaPostagensFeed = new ArrayList<>();
+
+    private MaterialButtonToggleGroup toggleGroupFeedVisita;
+    private PostagemAdapter publicacoesAdapter;
+    private List<Postagem> listaPublicacoes = new ArrayList<>();
 
     private String idUsuarioVisitado;
 
@@ -67,6 +73,7 @@ public class VisualizacaoUsuarioFragment extends Fragment {
         imagePerfilVisita = view.findViewById(R.id.imagePerfilVisita);
         imageCapaVisita = view.findViewById(R.id.imageCapaVisita);
         btnIniciarChat = view.findViewById(R.id.btnIniciarChat);
+        toggleGroupFeedVisita = view.findViewById(R.id.toggleGroupFeedVisita);
 
         configurarRecyclerViews();
 
@@ -90,14 +97,29 @@ public class VisualizacaoUsuarioFragment extends Fragment {
     }
 
     private void configurarRecyclerViews() {
-        // Passamos o ID do usuário visitado para o Adapter dos Pets (para ele abrir o Pet certo depois)
         petAdapter = new PetCarrosselAdapter(listaPets, idUsuarioVisitado);
         recyclerPetsVisita.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         recyclerPetsVisita.setAdapter(petAdapter);
 
         feedAdapter = new FeedUsuarioAdapter(listaPostagensFeed, false);
+        publicacoesAdapter = new PostagemAdapter(listaPublicacoes, true);
+
         recyclerFeedVisita.setLayoutManager(new GridLayoutManager(getContext(), 3));
         recyclerFeedVisita.setAdapter(feedAdapter);
+
+        if (toggleGroupFeedVisita != null) {
+            toggleGroupFeedVisita.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (isChecked) {
+                    if (checkedId == R.id.btnAbaPostagensVisita) {
+                        recyclerFeedVisita.setLayoutManager(new GridLayoutManager(getContext(), 3));
+                        recyclerFeedVisita.setAdapter(feedAdapter);
+                    } else if (checkedId == R.id.btnAbaPublicacoesVisita) {
+                        recyclerFeedVisita.setLayoutManager(new LinearLayoutManager(getContext()));
+                        recyclerFeedVisita.setAdapter(publicacoesAdapter);
+                    }
+                }
+            });
+        }
     }
 
     private void carregarDadosUsuario(String uid) {
@@ -154,8 +176,10 @@ public class VisualizacaoUsuarioFragment extends Fragment {
 
     private void carregarPostagensUsuario(DataSnapshot postagensSnapshot) {
         listaPostagensFeed.clear();
+        listaPublicacoes.clear();
         if (!postagensSnapshot.exists()) {
             feedAdapter.notifyDataSetChanged();
+            publicacoesAdapter.notifyDataSetChanged();
             return;
         }
 
@@ -175,8 +199,13 @@ public class VisualizacaoUsuarioFragment extends Fragment {
                 if (snapshot.exists() && isAdded()) {
                     Postagem postagem = snapshot.getValue(Postagem.class);
                     if (postagem != null) {
-                        listaPostagensFeed.add(0, postagem);
-                        feedAdapter.notifyDataSetChanged();
+                        if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
+                            listaPublicacoes.add(0, postagem);
+                            publicacoesAdapter.notifyDataSetChanged();
+                        } else {
+                            listaPostagensFeed.add(0, postagem);
+                            feedAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
             }

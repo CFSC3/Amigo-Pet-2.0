@@ -16,6 +16,9 @@ import java.util.Map;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
+    // Identificador único para empilhar mensagens
+    private static final String GRUPO_MENSAGENS = "com.ifam.amigopetfixo.MENSAGENS";
+
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -23,6 +26,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         String titulo = dados.get("titulo");
         String corpo = dados.get("corpo");
+        String acao = dados.get("Acao") != null ? dados.get("Acao") : dados.get("acao");
+        String uidDestino = dados.get("uidDestino");
+        String idPostagem = dados.get("idPostagem");
+
+        // O usuário já está na tela
+        if ("AbrirConversa".equals(acao) && uidDestino != null && uidDestino.equals(AppStatus.idChatAberto)) {
+            return; // Aborta a notificação. O usuário já está lendo no chat!
+        }
+
+        if ("AbrirComentario".equals(acao) && idPostagem != null && idPostagem.equals(AppStatus.idPostagemAberta)) {
+            return; // Aborta a notificação. O usuário já está lendo os comentários!
+        }
 
         if (titulo == null && remoteMessage.getNotification() != null) {
             titulo = remoteMessage.getNotification().getTitle();
@@ -30,42 +45,34 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         if (titulo != null) {
-            enviarNotificacaoLocal(titulo, corpo, dados);
+            enviarNotificacaoLocal(titulo, corpo, acao, uidDestino, idPostagem);
         }
     }
 
-    private void enviarNotificacaoLocal(String titulo, String corpo, Map<String, String> dados) {
+    private void enviarNotificacaoLocal(String titulo, String corpo, String acao, String uidDestino, String idPostagem) {
         Intent intent = new Intent(this, Tela_principal.class);
 
-        String acao = dados.get("Acao");
-        if (acao == null) {
-            acao = dados.get("acao");
-        }
+        // Cada notificação recebe um ID fixo com base no remetente ou postagem.
+        // Assim, 5 mensagens do "João" atualizam 1 único balão, em vez de criar 5 balões novos.
+        int idNotificacao = 0;
 
         if ("AbrirConversa".equals(acao)) {
             intent.putExtra("Acao", acao);
-            intent.putExtra("uidDestino", dados.get("uidDestino"));
+            intent.putExtra("uidDestino", uidDestino);
+            idNotificacao = uidDestino != null ? uidDestino.hashCode() : (int) System.currentTimeMillis();
         } else if ("AbrirComentario".equals(acao)) {
             intent.putExtra("Acao", acao);
-            intent.putExtra("idPostagem", dados.get("idPostagem"));
+            intent.putExtra("idPostagem", idPostagem);
+            idNotificacao = idPostagem != null ? idPostagem.hashCode() : (int) System.currentTimeMillis();
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        int requestCode = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                this, idNotificacao, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         String canalId = "canal_amigo_pet";
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canalId)
-                .setSmallIcon(R.drawable.logo_png)
-                .setContentTitle(titulo)
-                .setContentText(corpo)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
-
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -73,6 +80,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             manager.createNotificationChannel(canal);
         }
 
-        manager.notify((int) System.currentTimeMillis(), builder.build());
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canalId)
+                .setSmallIcon(R.drawable.logo_png)
+                .setContentTitle(titulo)
+                .setContentText(corpo)
+                .setAutoCancel(true)
+                .setGroup(GRUPO_MENSAGENS)
+                .setContentIntent(pendingIntent);
+
+        manager.notify(idNotificacao, builder.build());
+
+        NotificationCompat.Builder summaryBuilder = new NotificationCompat.Builder(this, canalId)
+                .setContentTitle("Amigo Pet")
+                .setSmallIcon(R.drawable.logo_png)
+                .setStyle(new NotificationCompat.InboxStyle().setSummaryText("Novas mensagens"))
+                .setGroup(GRUPO_MENSAGENS)
+                .setGroupSummary(true)
+                .setAutoCancel(true);
+
+        manager.notify(999, summaryBuilder.build());
     }
 }

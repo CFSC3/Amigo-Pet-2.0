@@ -94,6 +94,7 @@
                     android:id="@+id/editTituloDoacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="40"
                     android:hint="Título do Anúncio" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -107,6 +108,7 @@
                     android:id="@+id/editDescricaoDoacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="1200"
                     android:minLines="4"
                     android:gravity="top"
                     android:hint="Descrição" />
@@ -183,7 +185,25 @@
                     android:id="@+id/editEnderecoDoacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="40"
                     android:hint="Endereço" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Cidade -->
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Cidade">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editCidadeDoacao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLength="30"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Bairro -->
@@ -196,6 +216,7 @@
                     android:id="@+id/editBairroDoacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="30"
                     android:hint="Bairro" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -209,6 +230,7 @@
                     android:id="@+id/editContatoDoacao"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="11"
                     android:inputType="phone"
                     android:hint="Contato (WhatsApp)" />
             </com.google.android.material.textfield.TextInputLayout>

@@ -95,16 +95,30 @@
             android:clipToPadding="false"
             android:paddingHorizontal="16dp" />
 
-        <!-- Título Postagens -->
-        <TextView
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleGroupFeedVisita"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Postagens"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_gravity="center_horizontal"
+            app:checkedButton="@+id/btnAbaPostagensVisita"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAbaPostagensVisita"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mídias" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAbaPublicacoesVisita"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Publicações" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <!-- Feed do Usuário -->
         <androidx.recyclerview.widget.RecyclerView

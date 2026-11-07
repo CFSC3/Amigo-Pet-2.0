@@ -8,7 +8,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.widget.Toolbar;
-import android.widget.VideoView;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -44,7 +46,8 @@ public class VisualizarPostagemThreadFragment extends Fragment {
     private ShapeableImageView imgAvatarAutor;
     private TextView txtNomeAutor, txtUsernameAutor, txtTextoPostagem, txtNumeroCurtidas, txtNumeroComentarios;
     private ImageView imgMidiaPostagem, iconePlayVideo, iconeCoracao;
-    private VideoView videoMidiaPostagem;
+    private StyledPlayerView videoMidiaPostagem;
+    private ExoPlayer exoPlayer;
 
     private View btnCurtir, btnComentar;
     private EditText editComentarioThread;
@@ -187,18 +190,48 @@ public class VisualizarPostagemThreadFragment extends Fragment {
                         carregarAutorPostagem(postagem.getIdUsuario());
                         configurarCurtidasEComentariosContador();
 
-                        if ("video".equals(postagem.getTipoMidia())) {
-                            iconePlayVideo.setVisibility(View.VISIBLE);
-                            imgMidiaPostagem.setOnClickListener(v -> {
-                                imgMidiaPostagem.setVisibility(View.GONE);
+                        View cardMidia = getView() != null ? getView().findViewById(R.id.cardMidia) : null;
+
+                        if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
+                            // É texto puro: esconde todo o container de mídia
+                            if (cardMidia != null) cardMidia.setVisibility(View.GONE);
+                            imgMidiaPostagem.setVisibility(View.GONE);
+                            iconePlayVideo.setVisibility(View.GONE);
+                            videoMidiaPostagem.setVisibility(View.GONE);
+                            imgMidiaPostagem.setOnClickListener(null);
+                        } else {
+                            // garante que o container está visível
+                            if (cardMidia != null) cardMidia.setVisibility(View.VISIBLE);
+
+                            if ("video".equals(postagem.getTipoMidia())) {
+                                iconePlayVideo.setVisibility(View.VISIBLE);
+                                imgMidiaPostagem.setOnClickListener(v -> {
+                                    imgMidiaPostagem.setVisibility(View.GONE);
+                                    iconePlayVideo.setVisibility(View.GONE);
+                                    videoMidiaPostagem.setVisibility(View.VISIBLE);
+
+                                    if (exoPlayer != null) {
+                                        exoPlayer.release();
+                                    }
+                                    exoPlayer = new ExoPlayer.Builder(getContext()).build();
+                                    videoMidiaPostagem.setPlayer(exoPlayer);
+                                    exoPlayer.setMediaItem(MediaItem.fromUri(postagem.getUrlMidia()));
+                                    exoPlayer.prepare();
+                                    exoPlayer.play();
+                                });
+                            } else {
                                 iconePlayVideo.setVisibility(View.GONE);
-                                videoMidiaPostagem.setVisibility(View.VISIBLE);
-                                android.widget.MediaController mediaController = new android.widget.MediaController(getContext());
-                                mediaController.setAnchorView(videoMidiaPostagem);
-                                videoMidiaPostagem.setMediaController(mediaController);
-                                videoMidiaPostagem.setVideoURI(android.net.Uri.parse(postagem.getUrlMidia()));
-                                videoMidiaPostagem.start();
-                            });
+                                imgMidiaPostagem.setOnClickListener(v -> {
+                                    if (getContext() != null) {
+                                        android.app.Dialog dialog = new android.app.Dialog(getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+                                        dialog.setContentView(R.layout.dialog_imagem_expandida);
+                                        android.widget.ImageView imgExpandida = dialog.findViewById(R.id.imgExpandida);
+                                        com.bumptech.glide.Glide.with(getContext()).load(postagem.getUrlMidia()).into(imgExpandida);
+                                        imgExpandida.setOnClickListener(view -> dialog.dismiss());
+                                        dialog.show();
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -315,6 +348,15 @@ public class VisualizarPostagemThreadFragment extends Fragment {
                 ((androidx.appcompat.app.AppCompatActivity) getActivity()).getSupportActionBar().show();
             }
         } catch (Exception e) {
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (exoPlayer != null) {
+            exoPlayer.release();
+            exoPlayer = null;
         }
     }
 }

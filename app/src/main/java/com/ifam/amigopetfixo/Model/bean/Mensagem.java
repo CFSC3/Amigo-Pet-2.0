@@ -6,6 +6,9 @@ public class Mensagem {
     private String texto;
     private String urlMidia;
     private String tipoMensagem;
+    private String idMensagemCitada;
+    private String textoMensagemCitada;
+    private String autorMensagemCitada;
     private long dataHora;
 
     public Mensagem() {}
@@ -27,4 +30,28 @@ public class Mensagem {
 
     public long getDataHora() { return dataHora; }
     public void setDataHora(long dataHora) { this.dataHora = dataHora; }
+
+    public String getAutorMensagemCitada() {
+        return autorMensagemCitada;
+    }
+
+    public void setAutorMensagemCitada(String autorMensagemCitada) {
+        this.autorMensagemCitada = autorMensagemCitada;
+    }
+
+    public String getTextoMensagemCitada() {
+        return textoMensagemCitada;
+    }
+
+    public void setTextoMensagemCitada(String textoMensagemCitada) {
+        this.textoMensagemCitada = textoMensagemCitada;
+    }
+
+    public String getIdMensagemCitada() {
+        return idMensagemCitada;
+    }
+
+    public void setIdMensagemCitada(String idMensagemCitada) {
+        this.idMensagemCitada = idMensagemCitada;
+    }
 }
