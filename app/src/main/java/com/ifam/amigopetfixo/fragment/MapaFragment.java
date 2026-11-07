@@ -76,6 +76,8 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mostrarAvisoRefinamentoMapa();
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         imgDetalheLogo = view.findViewById(R.id.imgDetalheLogo);
 
@@ -237,5 +239,18 @@ public class MapaFragment extends Fragment implements OnMapReadyCallback {
         vectorDrawable.draw(canvas);
 
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private void mostrarAvisoRefinamentoMapa() {
+        if (!isAdded() || getContext() == null) return;
+
+        new android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Mapa em Refinamento")
+                .setMessage("Olá! Esta seção do mapa está em fase de aprimoramento e expansão de parceiros. Por enquanto, as localizações exibidas servem como demonstração e podem não refletir todas as lojas ou ONGs próximas de você. Agradecemos a compreensão!")
+                .setPositiveButton("Entendi", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setCancelable(false)
+                .show();
     }
 }
