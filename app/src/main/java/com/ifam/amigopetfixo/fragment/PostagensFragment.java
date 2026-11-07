@@ -135,7 +135,7 @@ public class PostagensFragment extends Fragment {
         androidx.appcompat.widget.SearchView searchViewPost = (androidx.appcompat.widget.SearchView) itemPesquisaPost.getActionView();
 
         // LÓGICA DA LUPA 1 (USUÁRIOS)
-        searchViewUsuario.setQueryHint("Nome ou @username...");
+        searchViewUsuario.setQueryHint("Nome ou @username");
         searchViewUsuario.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) { return false; }
@@ -147,16 +147,14 @@ public class PostagensFragment extends Fragment {
                     return true;
                 }
 
-                // Guardamos exatamente o que você digitou nesse milissegundo
                 final String pesquisaAtual = newText;
 
                 pesquisaUsuarioUseCase.executarBusca(pesquisaAtual, new UsuarioRepository.OnBuscaUsuariosListener() {
                     @Override
                     public void onSuccess(List < Map < String , String > > usuarios) {
-                        // Verifica o que está escrito AGORA na lupa
+
                         String textoNaLupa = searchViewUsuario.getQuery().toString();
 
-                        // Se você já apagou o texto ou continuou digitando outra coisa, ignora esse resultado atrasado!
                         if (textoNaLupa.trim().isEmpty() || !textoNaLupa.equals(pesquisaAtual)) {
                             return;
                         }
@@ -182,7 +180,11 @@ public class PostagensFragment extends Fragment {
         itemPesquisaUsuario.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                // Apenas fecha a outra lupa, sem causar o "pisque" no feed.
+
+                if (!VisitanteHelper.verificarAcesso(getContext())) {
+                    return false; // Bloqueia a expansão do campo de busca
+                }
+
                 if (itemPesquisaPost.isActionViewExpanded()) {
                     itemPesquisaPost.collapseActionView();
                 }
@@ -197,7 +199,7 @@ public class PostagensFragment extends Fragment {
         });
 
         // LÓGICA DA LUPA 2 (FILTRAR POSTS)
-        searchViewPost.setQueryHint("Filtrar posts (ex: adoção)");
+        searchViewPost.setQueryHint("Filtrar feed");
         searchViewPost.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -219,7 +221,11 @@ public class PostagensFragment extends Fragment {
         itemPesquisaPost.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                // Apenas fecha a outra lupa, sem causar o "pisque" no feed.
+
+                if (!VisitanteHelper.verificarAcesso(getContext())) {
+                    return false; // Bloqueia a expansão do campo de busca
+                }
+
                 if (itemPesquisaUsuario.isActionViewExpanded()) {
                     itemPesquisaUsuario.collapseActionView();
                 }
