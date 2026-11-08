@@ -1,14 +1,58 @@
+# ==========================================
+# SEGURANÇA E CREDENCIAIS
+# ==========================================
+# Configurações e Chaves do Firebase e Google Maps
+app/google-services.json
+google-services.json
+**/google_maps_api.xml
+**/secrets.xml
+.firebaserc
+
+# Chaves de Assinatura do App (Release / Play Store)
+*.jks
+*.keystore
+key.properties
+
+# Variáveis de Ambiente
+.env
+.env.*
+*.local
+
+# ==========================================
+# 🛠️ ANDROID STUDIO & GRADLE
+# ==========================================
 *.iml
-.gradle
+.gradle/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+/build/
+app/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Ignorar toda a pasta .idea (evita vazar configurações locais da máquina)
+.idea/
+
+# ==========================================
+# ☁️ FIREBASE & CLOUD FUNCTIONS (NODE.JS)
+# ==========================================
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+functions/node_modules/
+node_modules/
+
+# ==========================================
+# 💻 SISTEMA OPERACIONAL
+# ==========================================
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+Thumbs.db
+Desktop.ini
