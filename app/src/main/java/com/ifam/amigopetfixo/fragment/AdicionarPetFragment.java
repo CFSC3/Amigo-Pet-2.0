@@ -15,6 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,14 +45,11 @@ public class AdicionarPetFragment extends Fragment {
     private Uri uriImagemSelecionada = null;
     private PetRepository petRepository;
 
-    private final ActivityResultLauncher<Intent> selecionarImagemLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri uri = result.getData().getData();
-                    if (uri != null) {
-                        iniciarUCrop(uri);
-                    }
+    private final ActivityResultLauncher<PickVisualMediaRequest> abrirGaleria = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    iniciarUCrop(uri);
                 }
             }
     );
@@ -99,8 +97,9 @@ public class AdicionarPetFragment extends Fragment {
 
     private void configurarCliques() {
         imgAddFotoPet.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            selecionarImagemLauncher.launch(intent);
+            abrirGaleria.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
 
         btnSalvarPet.setOnClickListener(v -> validarESalvarPet());

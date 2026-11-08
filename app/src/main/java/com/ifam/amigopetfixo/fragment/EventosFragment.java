@@ -95,6 +95,9 @@ public class EventosFragment extends Fragment implements AdapterEvento.OnEventoC
             @Override
             public void onSuccess(List<Evento> eventos) {
                 listaEventos.clear();
+
+                java.util.Collections.reverse(eventos);
+
                 listaEventos.addAll(eventos);
                 adapter.notifyDataSetChanged();
             }

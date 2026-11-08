@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,19 +48,16 @@ public class EditarPerfilFragment extends Fragment {
     private boolean isSelecionandoCapa = false;
     private int uploadsPendentes = 0;
 
-    private final ActivityResultLauncher<Intent> selecionarImagemLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri imagemUri = result.getData().getData();
-                    if (imagemUri != null) {
-                        if (isSelecionandoCapa) {
-                            uriImagemCapaSelecionada = imagemUri;
-                            Glide.with(this).load(imagemUri).centerCrop().into(editImageCapa);
-                        } else {
-                            uriImagemPerfilSelecionada = imagemUri;
-                            Glide.with(this).load(imagemUri).centerCrop().into(editImagePerfil);
-                        }
+    private final ActivityResultLauncher<PickVisualMediaRequest> abrirGaleria = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    if (isSelecionandoCapa) {
+                        uriImagemCapaSelecionada = uri;
+                        Glide.with(this).load(uri).centerCrop().into(editImageCapa);
+                    } else {
+                        uriImagemPerfilSelecionada = uri;
+                        Glide.with(this).load(uri).centerCrop().into(editImagePerfil);
                     }
                 }
             }
@@ -126,8 +124,9 @@ public class EditarPerfilFragment extends Fragment {
 
     private void abrirGaleria(boolean paraCapa) {
         isSelecionandoCapa = paraCapa;
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        selecionarImagemLauncher.launch(intent);
+        abrirGaleria.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void salvarDadosNoBanco() {

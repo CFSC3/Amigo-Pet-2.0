@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.ifam.amigopetfixo.Model.bean.Adocoes;
@@ -61,6 +62,8 @@ public class AdocoesAdapter extends RecyclerView.Adapter<AdocoesAdapter.MyViewHo
                         .load(uri)
                         .centerCrop()
                         .placeholder(R.drawable.padrao)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Puxa do cache instantaneamente
+                        .dontAnimate() // Sem piscar!
                         .into(holder.foto);
             }).addOnFailureListener(e -> {
                 holder.foto.setImageResource(R.drawable.padrao);
@@ -71,7 +74,6 @@ public class AdocoesAdapter extends RecyclerView.Adapter<AdocoesAdapter.MyViewHo
 
         holder.itemView.setOnClickListener(v -> {
             if (!VisitanteHelper.verificarAcesso(v.getContext())) return;
-
             listener.onItemClick(adocao);
         });
     }

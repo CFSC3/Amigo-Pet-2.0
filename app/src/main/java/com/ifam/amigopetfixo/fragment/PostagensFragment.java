@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -131,8 +132,25 @@ public class PostagensFragment extends Fragment {
         MenuItem itemPesquisaPost = toolbar.getMenu().findItem(R.id.action_pesquisar_post);
         MenuItem itemChat = toolbar.getMenu().findItem(R.id.action_chat);
 
-        androidx.appcompat.widget.SearchView searchViewUsuario = (androidx.appcompat.widget.SearchView) itemPesquisaUsuario.getActionView();
-        androidx.appcompat.widget.SearchView searchViewPost = (androidx.appcompat.widget.SearchView) itemPesquisaPost.getActionView();
+        SearchView searchViewUsuario = (SearchView) itemPesquisaUsuario.getActionView();
+        SearchView searchViewPost = (SearchView) itemPesquisaPost.getActionView();
+
+        int corTexto = getResources().getColor(R.color.branco, getContext().getTheme());
+        int corDica = getResources().getColor(R.color.branco, getContext().getTheme());
+
+        // Arruma a lupa de Usuários
+        android.widget.EditText txtSearchUsuario = searchViewUsuario.findViewById(androidx.appcompat.R.id.search_src_text);
+        if (txtSearchUsuario != null) {
+            txtSearchUsuario.setTextColor(corTexto);
+            txtSearchUsuario.setHintTextColor(corDica);
+        }
+
+        // Arruma a lupa de Postagens
+        android.widget.EditText txtSearchPost = searchViewPost.findViewById(androidx.appcompat.R.id.search_src_text);
+        if (txtSearchPost != null) {
+            txtSearchPost.setTextColor(corTexto);
+            txtSearchPost.setHintTextColor(corDica);
+        }
 
         // LÓGICA DA LUPA 1 (USUÁRIOS)
         searchViewUsuario.setQueryHint("Nome ou @username");

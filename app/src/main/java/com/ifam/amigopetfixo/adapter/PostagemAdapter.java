@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -54,12 +56,7 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
         holder.txtTextoPostagem.setText(postagem.getTextoPostagem());
         android.text.util.Linkify.addLinks(holder.txtTextoPostagem, android.text.util.Linkify.WEB_URLS);
 
-        Glide.with(holder.itemView.getContext())
-                .load(postagem.getUrlMidia())
-                .centerCrop()
-                .into(holder.imgMidiaPostagem);
-
-        // Limpa player anterior se o card for reciclado (rolagem de tela)
+        // Limpa player anterior se o card for reciclado
         if (holder.exoPlayer != null) {
             holder.exoPlayer.release();
             holder.exoPlayer = null;
@@ -88,38 +85,48 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
                         Glide.with(holder.itemView.getContext())
                                 .load(fotoPerfilUrl)
                                 .placeholder(R.drawable.padrao)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .dontAnimate() // Deixa a foto fixa sem piscar
                                 .into(holder.imgAvatarAutor);
+                    } else {
+                        holder.imgAvatarAutor.setImageResource(R.drawable.padrao);
                     }
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
         });
 
         // Verifica se a postagem é pura de texto
         if ("texto".equals(postagem.getTipoMidia()) || postagem.getUrlMidia() == null || postagem.getUrlMidia().isEmpty()) {
-            // Esconde o card da imagem inteiro
             holder.itemView.findViewById(R.id.cardMidia).setVisibility(View.GONE);
+            holder.shimmerLayout.setVisibility(View.GONE); // Oculta o Shimmer
             holder.videoMidiaPostagem.setVisibility(View.GONE);
             holder.imgMidiaPostagem.setVisibility(View.GONE);
             holder.iconePlayVideo.setVisibility(View.GONE);
             holder.imgMidiaPostagem.setOnClickListener(null);
         } else {
-            // Mostra o card
             holder.itemView.findViewById(R.id.cardMidia).setVisibility(View.VISIBLE);
 
             if ("video".equals(postagem.getTipoMidia())) {
+                holder.shimmerLayout.setVisibility(View.GONE); // Não aplica shimmer no player
                 holder.videoMidiaPostagem.setVisibility(View.GONE);
                 holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
                 holder.iconePlayVideo.setVisibility(View.VISIBLE);
+
+                // Carrega uma thumbnail do video usando a própria URL com cache
+                Glide.with(holder.itemView.getContext())
+                        .load(postagem.getUrlMidia())
+                        .placeholder(R.color.colorDivider)
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(holder.imgMidiaPostagem);
 
                 holder.imgMidiaPostagem.setOnClickListener(v -> {
                     holder.imgMidiaPostagem.setVisibility(View.GONE);
                     holder.iconePlayVideo.setVisibility(View.GONE);
                     holder.videoMidiaPostagem.setVisibility(View.VISIBLE);
 
-                    // Cria o motor rápido e acopla ao visual do Card
                     holder.exoPlayer = new ExoPlayer.Builder(v.getContext()).build();
                     holder.videoMidiaPostagem.setPlayer(holder.exoPlayer);
                     holder.exoPlayer.setMediaItem(MediaItem.fromUri(postagem.getUrlMidia()));
@@ -128,8 +135,33 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
                 });
             } else {
                 holder.videoMidiaPostagem.setVisibility(View.GONE);
-                holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
                 holder.iconePlayVideo.setVisibility(View.GONE);
+
+                // Exibe a imagem de forma transparente e mostra o Shimmer animado por trás
+                holder.imgMidiaPostagem.setVisibility(View.VISIBLE);
+                holder.shimmerLayout.setVisibility(View.VISIBLE);
+                holder.shimmerLayout.startShimmer();
+
+                Glide.with(holder.itemView.getContext())
+                        .load(postagem.getUrlMidia())
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache para não baixar novamente no scroll
+                        .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@androidx.annotation.Nullable com.bumptech.glide.load.engine.GlideException e, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, boolean isFirstResource) {
+                                holder.shimmerLayout.stopShimmer();
+                                holder.shimmerLayout.setVisibility(View.GONE);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(android.graphics.drawable.Drawable resource, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                                holder.shimmerLayout.stopShimmer();
+                                holder.shimmerLayout.setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
+                        .into(holder.imgMidiaPostagem);
 
                 // Lógica de expansão da imagem na tela preta
                 holder.imgMidiaPostagem.setOnClickListener(v -> {
@@ -140,6 +172,7 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
 
                     com.bumptech.glide.Glide.with(v.getContext())
                             .load(postagem.getUrlMidia())
+                            .diskCacheStrategy(DiskCacheStrategy.ALL) // Usa o mesmo cache para a imagem expandida
                             .into(imgExpandida);
 
                     imgExpandida.setOnClickListener(view -> dialog.dismiss());
@@ -288,6 +321,7 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
         View btnComentar;
         StyledPlayerView videoMidiaPostagem;
         ExoPlayer exoPlayer;
+        ShimmerFrameLayout shimmerLayout;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -303,6 +337,7 @@ public class PostagemAdapter extends RecyclerView.Adapter<PostagemAdapter.MyView
             btnCurtir = itemView.findViewById(R.id.btnCurtir);
             btnComentar = itemView.findViewById(R.id.btnComentar);
             videoMidiaPostagem = itemView.findViewById(R.id.videoMidiaPostagem);
+            shimmerLayout = itemView.findViewById(R.id.shimmer_view_container);
         }
     }
 }

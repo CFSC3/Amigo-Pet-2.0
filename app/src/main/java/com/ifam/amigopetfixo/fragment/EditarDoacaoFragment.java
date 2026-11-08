@@ -14,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -64,11 +65,11 @@ public class EditarDoacaoFragment extends Fragment {
     private FusedLocationProviderClient fusedLocationClient;
     private String cidadeDetectada = "";
 
-    private final ActivityResultLauncher<Intent> galeriaLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    imagemUriSelecionada = result.getData().getData();
+    private final ActivityResultLauncher<PickVisualMediaRequest> galeriaLauncher = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    imagemUriSelecionada = uri;
                     imagemBitmapCapturada = null;
                     imgMidiaEditar.setImageURI(imagemUriSelecionada);
                 }
@@ -209,8 +210,9 @@ public class EditarDoacaoFragment extends Fragment {
         bottomSheetView.findViewById(R.id.btnBottomGaleria).setOnClickListener(viewGaleria -> {
             bottomSheetDialog.dismiss();
 
-            Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            galeriaLauncher.launch(pickPhotoIntent);
+            galeriaLauncher.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
 
         bottomSheetDialog.show();

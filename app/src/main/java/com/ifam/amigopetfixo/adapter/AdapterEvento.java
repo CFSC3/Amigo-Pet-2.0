@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.ifam.amigopetfixo.Model.bean.Evento;
 import com.ifam.amigopetfixo.R;
 import com.ifam.amigopetfixo.helper.VisitanteHelper;
@@ -44,17 +45,20 @@ public class AdapterEvento extends RecyclerView.Adapter<AdapterEvento.MyViewHold
         holder.titulo.setText(evento.getTitulo());
         holder.resumo.setText(evento.getResumo());
 
-        if (evento.getUrlImagem() != null) {
+        if (evento.getUrlImagem() != null && !evento.getUrlImagem().isEmpty()) {
             Glide.with(holder.itemView.getContext())
                     .load(evento.getUrlImagem())
                     .centerCrop()
                     .placeholder(R.drawable.padrao)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Puxa do cache instantaneamente
+                    .dontAnimate() // Sem piscar!
                     .into(holder.imagem);
+        } else {
+            holder.imagem.setImageResource(R.drawable.padrao);
         }
 
         holder.itemView.setOnClickListener(v -> {
             if (!VisitanteHelper.verificarAcesso(v.getContext())) return;
-
             if (listener != null) {
                 listener.onEventoClick(evento);
             }

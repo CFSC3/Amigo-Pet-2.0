@@ -55,11 +55,11 @@ public class Adocoes_DoacoesFragment extends Fragment {
     private String categoriaSelecionada = "Todas as Categorias";
     private AutoCompleteTextView autoCompleteCidade;
     private String cidadeSelecionada = "Todas as Cidades";
-    private String cidadeSelecionadaViaGPS = "";
-    private String estadoDetectadoViaGPS = "";
 
-    public Adocoes_DoacoesFragment() {
-    }
+    private static String ultimaCidadeGPSDetectada = "";
+    private static String ultimoEstadoGPSDetectado = "";
+
+    public Adocoes_DoacoesFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,7 +79,6 @@ public class Adocoes_DoacoesFragment extends Fragment {
         autoCompleteTempo = view.findViewById(R.id.autoCompleteTempo);
         fabAdicionarDoacao = view.findViewById(R.id.fabAdicionarDoacao);
 
-
         adapter = new AdocoesAdapter(listaDoacoes, adocao -> {
             Intent intent = new Intent(getContext(), VisualizacaoHubActivity.class);
             intent.putExtra("TIPO_VISUALIZACAO", "DOACAO");
@@ -91,13 +90,19 @@ public class Adocoes_DoacoesFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 
-        detectarEstadoAtualUsuario();
+        repository = new DoacaoRepository();
+
+        if (ultimoEstadoGPSDetectado.isEmpty()) {
+            detectarEstadoAtualUsuario();
+        } else {
+            estadoSelecionado = ultimoEstadoGPSDetectado;
+            cidadeSelecionada = ultimaCidadeGPSDetectada;
+            carregarDadosDoBanco();
+        }
+
         configurarSpinners();
         configurarFiltroCategoria();
         configurarFabClique();
-
-        repository = new DoacaoRepository();
-        carregarDadosDoBanco();
     }
 
     private void detectarEstadoAtualUsuario() {
@@ -110,24 +115,29 @@ public class Adocoes_DoacoesFragment extends Fragment {
                         if (addresses != null && !addresses.isEmpty()) {
                             String estadoDetectado = addresses.get(0).getAdminArea();
                             if (estadoDetectado != null) {
-                                estadoDetectadoViaGPS = estadoDetectado;
-
+                                ultimoEstadoGPSDetectado = estadoDetectado;
                                 estadoSelecionado = estadoDetectado;
-                                autoCompleteEstado.setText(estadoSelecionado, false);
                             }
 
                             String local = addresses.get(0).getSubAdminArea();
                             if (local == null) local = addresses.get(0).getLocality();
                             if (local != null) {
-                                cidadeSelecionadaViaGPS = local;
+                                ultimaCidadeGPSDetectada = local;
+                                cidadeSelecionada = local;
                             }
+
+                            configurarSpinners();
+                            carregarDadosDoBanco();
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        carregarDadosDoBanco();
                     }
+                } else {
+                    carregarDadosDoBanco();
                 }
-            });
+            }).addOnFailureListener(e -> carregarDadosDoBanco());
         } catch (SecurityException e) {
+            carregarDadosDoBanco();
         }
     }
 
@@ -147,8 +157,8 @@ public class Adocoes_DoacoesFragment extends Fragment {
 
         autoCompleteEstado.setOnItemClickListener((parent, view, position, id) -> {
             estadoSelecionado = estados[position];
-            if (estadoSelecionado.equals(estadoDetectadoViaGPS) && !cidadeSelecionadaViaGPS.isEmpty()) {
-                cidadeSelecionada = cidadeSelecionadaViaGPS;
+            if (estadoSelecionado.equals(ultimoEstadoGPSDetectado) && !ultimaCidadeGPSDetectada.isEmpty()) {
+                cidadeSelecionada = ultimaCidadeGPSDetectada;
             } else {
                 cidadeSelecionada = "Todas as Cidades";
             }
@@ -181,14 +191,18 @@ public class Adocoes_DoacoesFragment extends Fragment {
         }
 
         List<String> cidadesList = new ArrayList<>(cidadesSet);
-
-        if (!cidadesSet.contains(cidadeSelecionada)) {
-            cidadeSelecionada = "Todas as Cidades";
-        }
-
         ArrayAdapter<String> adapterCidades = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, cidadesList);
         autoCompleteCidade.setAdapter(adapterCidades);
-        autoCompleteCidade.setText(cidadeSelecionada, false);
+
+        if (cidadesSet.contains(cidadeSelecionada)) {
+            autoCompleteCidade.setText(cidadeSelecionada, false);
+        } else if (!ultimaCidadeGPSDetectada.isEmpty() && cidadesSet.contains(ultimaCidadeGPSDetectada)) {
+            cidadeSelecionada = ultimaCidadeGPSDetectada;
+            autoCompleteCidade.setText(cidadeSelecionada, false);
+        } else {
+            cidadeSelecionada = "Todas as Cidades";
+            autoCompleteCidade.setText(cidadeSelecionada, false);
+        }
     }
 
     private void configurarFiltroCategoria() {
@@ -213,19 +227,31 @@ public class Adocoes_DoacoesFragment extends Fragment {
             @Override
             public void onDataLoaded(List<Adocoes> doacoes) {
                 listaMestreDoacoes.clear();
+
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", new java.util.Locale("pt", "BR"));
+                java.util.Collections.sort(doacoes, (a1, a2) -> {
+                    try {
+                        java.util.Date d1 = sdf.parse(a1.getData_post());
+                        java.util.Date d2 = sdf.parse(a2.getData_post());
+                        return d2.compareTo(d1); // Ordem decrescente (mais novo no topo)
+                    } catch (Exception e) {
+                        return 0;
+                    }
+                });
+
                 listaMestreDoacoes.addAll(doacoes);
                 atualizarCidadesDisponiveis();
 
-                if (!cidadeSelecionadaViaGPS.isEmpty()) {
+                if (!ultimaCidadeGPSDetectada.isEmpty() && cidadeSelecionada.equals(ultimaCidadeGPSDetectada)) {
                     boolean cidadeExisteNoEstado = false;
                     for (int i = 0; i < autoCompleteCidade.getAdapter().getCount(); i++) {
-                        if (autoCompleteCidade.getAdapter().getItem(i).toString().equals(cidadeSelecionadaViaGPS)) {
+                        if (autoCompleteCidade.getAdapter().getItem(i).toString().equals(ultimaCidadeGPSDetectada)) {
                             cidadeExisteNoEstado = true;
                             break;
                         }
                     }
                     if (cidadeExisteNoEstado) {
-                        cidadeSelecionada = cidadeSelecionadaViaGPS;
+                        cidadeSelecionada = ultimaCidadeGPSDetectada;
                         autoCompleteCidade.setText(cidadeSelecionada, false);
                     }
                 }
@@ -326,7 +352,6 @@ public class Adocoes_DoacoesFragment extends Fragment {
         }
 
         configurarSpinners();
-
         atualizarCidadesDisponiveis();
         aplicarFiltrosCombinados();
     }
