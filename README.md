@@ -2,13 +2,6 @@
 
 Super App Comunitário Pet em Ecossistema Fechado, Rede de Economia Circular Solidária e Plataforma Georreferenciada de Apoio à Causa Animal.
 
-[Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)  
-[Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)  
-[Kotlin](https://img.shields.io/badge/Kotlin-0095D5?&style=for-the-badge&logo=kotlin&logoColor=white)  
-[Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)  
-[SOLID](https://img.shields.io/badge/SOLID-Principles-blue?style=for-the-badge)  
-[Clean Code](https://img.shields.io/badge/Clean_Code-Practices-green?style=for-the-badge)
-
 # **📖 Sobre o Projeto**
 
 O **Amigo Pet** é um ecossistema mobile nativo desenvolvido para Android que integra, em um único ambiente digital, uma rede social comunitária de suporte mútuo entre tutores, uma central de economia circular 100% gratuita para doação de medicamentos e insumos, um portal de adoção responsável, um mural de eventos regionalizados e um mapa georreferenciado de serviços pet. O aplicativo foi [totalmente refatorado e melhorado desde a versão inicial](https://github.com/CFSC3/Amigo-Pet.git), evoluindo de um projeto básico para uma solução robusta e escalável em produção.
