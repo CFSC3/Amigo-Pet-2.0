@@ -1,6 +1,10 @@
-# 🐾 Amigo-Pet v2.5.8
-
+<h1 align="center">
+  <img src="app/src/main/res/drawable/logo.jpg" alt="Amigo Pet Logo" width="120">
+  <br>
+  🐾 Amigo-Pet v2.5.8
+</h1>
 Super App Comunitário Pet em Ecossistema Fechado, Rede de Economia Circular Solidária e Plataforma Georreferenciada de Apoio à Causa Animal.
+<p></p>
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)  ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)  ![Kotlin](https://img.shields.io/badge/Kotlin-0095D5?style=for-the-badge&logo=kotlin&logoColor=white)  ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)  ![SOLID](https://img.shields.io/badge/SOLID-Principles-blue?style=for-the-badge)  ![Clean Code](https://img.shields.io/badge/Clean_Code-Practices-green?style=for-the-badge)
 
