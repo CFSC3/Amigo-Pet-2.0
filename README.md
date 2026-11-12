@@ -51,12 +51,12 @@ A versão 2.0 passou por uma refatoração profunda, abandonando práticas enges
 
 O Amigo Pet v2.0 foi desenhado com foco no conforto visual e interações suaves, oferecendo suporte nativo à transição para o Modo Escuro.
 
-<p align="center">
-  <!-- ADICIONE SEUS LINKS AQUI, substituindo "LINK_DA_IMAGEM_AQUI" pela url do github -->
-  <img src="LINK_DA_IMAGEM_AQUI" width="200" height="350" style="margin-right:10px;"/> 
-  <img src="LINK_DA_IMAGEM_AQUI" width="200" height="350" style="margin-right:10px;"/>
-  <img src="LINK_DA_IMAGEM_AQUI" width="200" height="350"/>
-</p>
+|  |  |  |  |  |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img3.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img4.jpg" width="220"> |
+| <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img3.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img4.jpg" width="220"> |
+| <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img2.1.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img3.jpg" width="220"> | <img src="https://github.com/CFSC3/Faturo/blob/main/imagens/img4.jpg" width="220"> |
+
 
 # 📲 Como Utilizar / Instalação
 
